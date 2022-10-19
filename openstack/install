@@ -2,6 +2,7 @@
 set -euo pipefail
 
 MARIADB_HOST=172.1.19.200
+MARIADB_PWD=9470eb6e164da764
 
 ADMIN_PASS=s3cr37
 CONTROLLER=localhost
@@ -13,6 +14,8 @@ DEBIAN_FRONTEND=noninteractive
 #    cat .ssh/id_ed25519.pub | ssh -p 2222 gpes@dev.labqs.ita.br 'cat >> .ssh/authorized_keys'
 ssh -p 2222 -fN -L 3306:$MARIADB_HOST:3306 gpes@dev.labqs.ita.br
 
+sed -i 's/@MARIADB_PWD/'${MARIADB_PWD}'/g' ./config/keystone/keystone.conf
+
 apt-get update -y && apt-get upgrade -y && \
 apt-get install -y keystone && \
 /bin/sh -c "keystone-manage db_sync" keystone && \
@@ -23,10 +26,6 @@ keystone-manage bootstrap --bootstrap-password ${ADMIN_PASS} \
     --bootstrap-internal-url https://${CONTROLLER}/keystone/v3 \
     --bootstrap-public-url https://${CONTROLLER}/keystone/v3 \
     --bootstrap-region-id RegionOne
-
-MARIADB_PWD=9470eb6e164da764
-
-sed -i 's/@MARIADB_PWD/'${MARIADB_PWD}'/g' ./config/keystone/keystone.conf
 
 export OS_USERNAME: admin
 export OS_PASSWORD: ${ADMIN_PASS}

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-MARIADB_HOST=172.1.19.201
+MARIADB_HOST=172.1.19.200
 
 ADMIN_PASS=s3cr37
 CONTROLLER=localhost
@@ -9,7 +9,9 @@ CONTROLLER=localhost
 DEBIAN_FRONTEND=noninteractive
 
 # Tunel para DB
-ssh -p 2222 -fN -L 3306:$MARIADB_HOST:3306 gpes@test.labqs.ita.br
+# Configurar auto-login:
+#    cat .ssh/id_ed25519.pub | ssh -p 2222 gpes@dev.labqs.ita.br 'cat >> .ssh/authorized_keys'
+ssh -p 2222 -fN -L 3306:$MARIADB_HOST:3306 gpes@dev.labqs.ita.br
 
 apt-get update -y && apt-get upgrade -y && \
 apt-get install -y keystone && \
@@ -22,15 +24,14 @@ keystone-manage bootstrap --bootstrap-password ${ADMIN_PASS} \
     --bootstrap-public-url https://${CONTROLLER}/keystone/v3 \
     --bootstrap-region-id RegionOne
 
-SVC_PWD=$(openssl rand -hex 8) > .env
-MARIADB_PWD=$(awk -F = $1 == $SVC_PWD  {print $2} ../mariadb/.env) >> .env
+MARIADB_PWD=9470eb6e164da764
 
-sed -i 's/@MARIADB_PWD/'$(awk -F'=' '$1 =="SVC_PWD" {print $2}' ../mariadb/.env)'/g' ./config/keystone/keystone.conf
+sed -i 's/@MARIADB_PWD/'${MARIADB_PWD}'/g' ./config/keystone/keystone.conf
 
 export OS_USERNAME: admin
-export OS_PASSWORD: ${SVC_PWD}
+export OS_PASSWORD: ${ADMIN_PASS}
 export OS_PROJECT_NAME: admin
 export OS_USER_DOMAIN_NAME: Default
 export OS_PROJECT_DOMAIN_NAME: Default
-export OS_AUTH_URL: https://${LAB_DOMAIN}/keystone/v3
+export OS_AUTH_URL: https://${CONTROLLER}/keystone/v3
 export OS_IDENTITY_API_VERSION: 3

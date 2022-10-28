@@ -1,0 +1,3 @@
+DHCPDv4_CONF=/etc/dhcp/dhcpd.conf
+INTERFACESv4="xenbr10 enp2s0f1"
+INTERFACESv6=""

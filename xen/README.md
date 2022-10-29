@@ -24,17 +24,18 @@ echo "gpes ALL=(ALL:ALL) ALL" | sudo tee /etc/sudoers.d/gpes
 ## Instalar Xen Hypervisor
 
 ```bash
-sudo apt-get install xen-hypervisor-amd64
+sudo apt-get install -y xen-hypervisor-amd64
 
 sudo reboot
 ```
 
 ### Configurar memória Xen
 
-```bash
-sudo vi /etc/default/grub.d/xen.cfg
+Arquivo `/etc/default/grub.d/xen.cfg`
+
+```ini
+GRUB_CMDLINE_XEN_DEFAULT="dom0_mem=10794M,max:10794M,max_loops=255"
 ```
-> GRUB_CMDLINE_XEN_DEFAULT="dom0_mem=10794M,max:10794M,max_loops=255"
 
 ```bash
 sudo update-grub
@@ -48,9 +49,15 @@ sudo reboot
 sudo apt install -y xen-tools
 ```
 
-### Configurar redes
+### DHCP server
 
-#### Configuração serviço DHCP
+```bash
+sudo apt install -y isc-dhcp-server
+```
+
+## Configurar redes
+
+### Configuração serviço DHCP
 
 Arquivo `/etc/default/isc-dhcp-server` ligado à _bridge_ para o _hypervisor_ de máquinas virtuais e a interface de rede física associada à _bridge_ (ver arquivo `/etc/netplan/00-default.yaml`).
 
@@ -60,7 +67,7 @@ INTERFACESv4="xenbr10 enp2s0f1"
 INTERFACESv6=""
 ```
 
-Arquivo `/etc/dhcp/dhcpd.conf` define um _pool_ de endereços para as máquinas virtuais cujo nome de _host_ iniciem por `labqs-vm`.
+Arquivo `/etc/dhcp/dhcpd.conf` define um _pool_ de endereços para as máquinas virtuais cujo nome de _host_ iniciem por `labqs`.
 
 ```ini
 option domain-name "labqs.ita.br";
@@ -73,8 +80,8 @@ ddns-update-style none;
 deny declines;
 deny bootp;
 
-class "labqs-vms" {
-    match if ( substring( option host-name, 0, 8 ) = "labqs-vm" );
+class "labqs" {
+    match if ( substring( option host-name, 0, 8 ) = "labqs" );
 }
 
 subnet 10.0.0.0 netmask 255.0.0.0 {
@@ -82,7 +89,7 @@ subnet 10.0.0.0 netmask 255.0.0.0 {
     option routers 10.0.0.1;
     pool {
         range 10.0.0.100 10.0.0.254;
-        allow members of "labqs-vms";
+        allow members of "labqs";
     }
 }
 ```
@@ -131,13 +138,13 @@ Arquivo `/etc/xen/xl.conf` associa a ponte a ser utilizada pelo _hypervisor_.
 vif.default.bridge="xenbr10"
 ```
 
-## Criar VM
+## Criar VMs
 
 A máquina virtual deve usar o prefixo assinalado pelo servidor *DHCP* para receber corretamente um endereço de rede.
 
 ```bash
 sudo xen-create-image \
-	--hostname='labqs-vm-c1' \
+	--hostname='labqs-c1' \
 	--memory=2gb \
 	--vcpus=2 \
 	--lvm=ubuntu-vg  \
@@ -158,11 +165,16 @@ sudo xen-create-image \
 ### Iniciar VM
 
 ```bash
-sudo xl create /etc/xen/labqs-vm-c1.cfg
+sudo xl create /etc/xen/labqs-c1.cfg
 ```
 
 ### Configuração inicial da VM
 
 ```bash
-sudo xl console labqs-vm-c1.cfg
+sudo xl console labqs-c1.cfg
 ```
+
+## TODO
+
+1. Configurar a comunicação entre a VM e o host para permitir acesso à internet
+1. Definir usuário inicial da VM

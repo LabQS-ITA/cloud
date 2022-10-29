@@ -2,7 +2,7 @@
 set -euo pipefail
 
 sudo xen-create-image \
-	--hostname='labqs-vm-c1' \
+	--hostname='labqs-c1' \
 	--memory=2gb \
 	--vcpus=2 \
 	--lvm=ubuntu-vg  \

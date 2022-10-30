@@ -12,5 +12,5 @@ sudo xen-create-image \
     --bridge=xenbr10 \
     --gateway=161.24.1.1 \
 	--pygrub \
-	--dist=bionic \
-    --accounts
+	--dist=bionic
+    --password=p4ssw0rd

@@ -23,7 +23,7 @@ logMessage Script $0 starting
 # Enable SSH access on port 2222 using password
 #
 sed -i 's/^#Port\s.*$/Port 2222/' ${prefix}/etc/ssh/sshd_config
-sed -i 's/^#PermitRootLogin prohibit-password\s.*$/ Yes/' ${prefix}/etc/ssh/sshd_config
+sed -i 's/^#PermitRootLogin\s.*$/PermitRootLogin Yes/' ${prefix}/etc/ssh/sshd_config
 sed -i 's/^#PasswordAuthentication\s.*$/PasswordAuthentication Yes/' ${prefix}/etc/ssh/sshd_config
 
 #

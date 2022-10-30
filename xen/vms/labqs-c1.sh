@@ -10,7 +10,7 @@ sudo xen-create-image \
 	--dhcp \
 	--randommac \
     --bridge=xenbr10 \
-    --gateway=161.24.1.1 \
+    --gateway=10.0.0.1 \
 	--pygrub \
-	--dist=bionic
+	--dist=bionic \
     --password=p4ssw0rd

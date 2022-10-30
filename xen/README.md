@@ -57,36 +57,6 @@ sudo reboot
 sudo apt install -y xen-tools
 ```
 
-#### Corrigir criação de usuários na VM
-
-Modificar arquivo `/usr/share/xen-tools/bionic.d/35-setup-users`, na função que adiciona o usuário no arquivo `/etc/passwd` da máquina virtual, modificar para criar a pasta do usuário
-
-```perl
-    #
-    #  passwd file.
-    #
-    open( PASSWD, "<", "/etc/passwd" );
-    foreach my $line ( <PASSWD> )
-    {
-        chomp( $line );
-        if ( $line =~ /^\Q$user\E:/ )
-        {
-            #
-            #  Add the line
-            #
-            open( OUTY, ">>", $prefix . "/etc/passwd" );
-            print OUTY $line . "\n";
-            close( OUTY );
-            #
-            # Create home dir
-            #
-            mkdir( $prefix . "/home/" . $user );
-            chown( $user:$user, -1, $prefix . "/home/" . $user );
-        }
-    }
-    close( PASSWD );
-```
-
 ## Configurar redes
 
 ### Configuração serviço DHCP

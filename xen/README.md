@@ -2,6 +2,14 @@
 
 ## Pré instalação Ubuntu
 
+### Ajustar `hosts`
+
+No arquivo `/etc/hosts`, eliminar linha
+
+```
+127.0.1.1 <nome do host>
+```
+
 ### Atualizar sistema
 
 ```bash
@@ -49,15 +57,17 @@ sudo reboot
 sudo apt install -y xen-tools
 ```
 
-### DHCP server
+## Configurar redes
+
+### Configuração serviço DHCP
+
+#### Opção ISC-DHCP
+
+Instalar serviço *ISC-DHCP*
 
 ```bash
 sudo apt install -y isc-dhcp-server
 ```
-
-## Configurar redes
-
-### Configuração serviço DHCP
 
 Arquivo `/etc/default/isc-dhcp-server` ligado à _bridge_ para o _hypervisor_ de máquinas virtuais e a interface de rede física associada à _bridge_ (ver arquivo `/etc/netplan/00-default.yaml`).
 
@@ -92,6 +102,56 @@ subnet 10.0.0.0 netmask 255.0.0.0 {
         allow members of "labqs";
     }
 }
+```
+
+#### Opção DNSMASQ
+
+Criar arquivo `\etc\resolv-dnsmasq.conf` (isto resolve problema ao desligar serviço *resolvd*).
+
+```bash
+sudo cp /etc/resolv.conf /etc/resolv-dnsmasq.conf
+```
+
+Instalar serviço *DNSMASQ*.
+
+```bash
+systemctl stop systemd-resolved
+systemctl mask systemd-resolved
+
+sudo apt install -y dnsmasq
+```
+
+Arquivo `/etc/resolv-dnsmasq.conf`
+
+```
+nameserver 127.0.0.53
+nameserver 161.24.23.180
+nameserver 161.24.23.199
+options edns0 trust-ad
+```
+
+Arquivo `/etc/dnsmasq.conf`.
+
+```ini
+port=53
+
+domain-needed
+bogus-priv
+
+resolv-file=/etc/resolv-dnsmasq.conf
+
+interface=xenbr10
+
+listen-address=127.0.0.1
+
+domain=labqs.ita.br
+
+cache-size=1000
+
+dhcp-range=10.0.0.100,10.0.0.254,255.0.0.0
+dhcp-no-override
+dhcp-authoritative
+dhcp-lease-max=253
 ```
 
 Arquivo `/etc/netplan/00-default.yaml` define os endereços fixos das duas interfaces de rede, sendo que uma delas é associada à _bridge_ ligada ao _hypervisor_.
@@ -138,6 +198,44 @@ Arquivo `/etc/xen/xl.conf` associa a ponte a ser utilizada pelo _hypervisor_.
 vif.default.bridge="xenbr10"
 ```
 
+Arquivo `/etc/xen-tools/role.d/labqs-sshd` para habilitar acesso *SSH* via porta 2222 para usuário *root*
+
+```bash
+#!/bin/sh
+#
+#  This role enable remote SSH access via port 2222
+#
+
+prefix=$1
+
+#
+#  Source our common functions - this will let us install a Debian package.
+#
+if [ -e /usr/share/xen-tools/common.sh ]; then
+    . /usr/share/xen-tools/common.sh
+else
+    echo "Installation problem"
+fi
+
+
+#
+# Log our start
+#
+logMessage Script $0 starting
+
+#
+# Enable SSH access on port 2222 using password
+#
+sed -i 's/^#Port\s.*$/Port 2222/' ${prefix}/etc/ssh/sshd_config
+sed -i 's/^PasswordAuthentication\s.*$/PasswordAuthentication Yes/' ${prefix}/etc/ssh/sshd_config
+
+#
+#  Log our finish
+#
+logMessage Script $0 finished
+```
+
+
 ## Criar VMs
 
 A máquina virtual deve usar o prefixo assinalado pelo servidor *DHCP* para receber corretamente um endereço de rede.
@@ -148,10 +246,14 @@ sudo xen-create-image \
 	--memory=2gb \
 	--vcpus=2 \
 	--lvm=ubuntu-vg  \
+    --size=5Gb \
 	--dhcp \
 	--randommac \
+    --bridge=xenbr10 \
+    --gateway=10.0.0.1 \
 	--pygrub \
-	--dist=bionic
+	--dist=bionic \
+    --accounts
 ```
 
 
@@ -168,10 +270,37 @@ sudo xen-create-image \
 sudo xl create /etc/xen/labqs-c1.cfg
 ```
 
+### Consultar IP
+
+#### Com ISC-DHCP
+
+```bash
+dhcp-lease-list
+```
+
+#### Com DNSMASQ
+
+```bash
+sudo cat /var/lib/misc/dnsmasq.leases
+```
+
 ### Configuração inicial da VM
 
 ```bash
 sudo xl console labqs-c1.cfg
+```
+
+### Acessar a VM
+
+```bash
+ssh root@labqs-c1
+```
+
+### Recriar VM
+
+```bash
+sudo xl destroy labqs-c1
+sudo xl create /etc/xen/labqs-c1.cfg
 ```
 
 ## TODO

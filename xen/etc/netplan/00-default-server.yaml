@@ -47,6 +47,3 @@ network:
         addresses:
         - 161.24.23.180
         - 161.24.23.199
-      parameters:
-        stp: true 
-        forward-delay: 4

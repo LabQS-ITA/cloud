@@ -11,6 +11,8 @@ sudo xen-create-image \
 	--randommac \
     --bridge=xenbr0 \
     --gateway=10.0.0.1 \
+    --role=labqs-sshd \
 	--pygrub \
 	--dist=bionic \
-    --password=p4ssw0rd
+    --password=p4ssw0rd \
+    --verbose

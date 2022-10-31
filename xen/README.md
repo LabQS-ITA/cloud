@@ -59,6 +59,34 @@ sudo apt install -y xen-tools
 
 ## Configurar redes
 
+Instalar utilitários
+
+```bash
+sudo apt install -y iptables-persistent
+```
+
+### Gateway interno
+
+Arquivo `/etc/sysctl.conf`, remover o comentário da linha:
+
+```ini
+net.ipv4.ip_forward=1
+```
+
+Atualizar com o comando
+
+```bash
+sysctl net.ipv4.ip_forward
+```
+
+Adicionar *NAT* _forwarding_
+
+```bash
+sudo iptables -t nat -A POSTROUTING -o enp2s0f1 -j MASQUERADE
+sudo dpkg-reconfigure iptables-persistent
+```
+
+
 ### Configuração serviço DHCP
 
 #### Opção ISC-DHCP

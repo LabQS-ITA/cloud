@@ -23,7 +23,7 @@ network:
       dhcp6: no
 
   bridges:
-    xenbr10:
+    xenbr0:
       dhcp4: no
       dhcp6: no
       addresses:

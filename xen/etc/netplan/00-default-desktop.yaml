@@ -1,0 +1,26 @@
+network:
+  version: 2
+  renderer: networkd
+
+  ethernets:
+    enp2s0:
+      dhcp4: no
+      dhcp6: no
+
+  bridges:
+    xenbr0:
+      dhcp4: no
+      dhcp6: no
+      addresses:
+      - 161.24.2.234/16
+      - 10.0.0.1/8
+      mtu: 1500
+      routes:
+      - to: default
+        via: 161.24.1.1
+      nameservers:
+        addresses:
+        - 161.24.23.180
+        - 161.24.23.199
+      interfaces:
+      - enp2s0

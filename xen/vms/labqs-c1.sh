@@ -9,7 +9,7 @@ sudo xen-create-image \
     --size=5Gb \
 	--dhcp \
 	--randommac \
-    --bridge=xenbr10 \
+    --bridge=xenbr0 \
     --gateway=10.0.0.1 \
 	--pygrub \
 	--dist=bionic \

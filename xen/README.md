@@ -73,7 +73,7 @@ Arquivo `/etc/default/isc-dhcp-server` ligado à _bridge_ para o _hypervisor_ de
 
 ```ini
 DHCPDv4_CONF=/etc/dhcp/dhcpd.conf
-INTERFACESv4="xenbr10 enp2s0f1"
+INTERFACESv4="xenbr0 enp2s0f1"
 INTERFACESv6=""
 ```
 
@@ -140,7 +140,7 @@ bogus-priv
 
 resolv-file=/etc/resolv-dnsmasq.conf
 
-interface=xenbr10
+interface=xenbr0
 
 listen-address=127.0.0.1
 
@@ -180,7 +180,7 @@ network:
       dhcp4: no
 
   bridges:
-    xenbr10:
+    xenbr0:
       dhcp4: no
       addresses:
       - 10.0.0.1/8
@@ -195,7 +195,7 @@ network:
 Arquivo `/etc/xen/xl.conf` associa a ponte a ser utilizada pelo _hypervisor_.
 
 ```ini
-vif.default.bridge="xenbr10"
+vif.default.bridge="xenbr0"
 ```
 
 Arquivo `/etc/xen-tools/role.d/labqs-sshd` para habilitar acesso *SSH* via porta 2222 para usuário *root*
@@ -249,7 +249,7 @@ sudo xen-create-image \
     --size=5Gb \
 	--dhcp \
 	--randommac \
-    --bridge=xenbr10 \
+    --bridge=xenbr0 \
     --gateway=10.0.0.1 \
 	--pygrub \
 	--dist=bionic \

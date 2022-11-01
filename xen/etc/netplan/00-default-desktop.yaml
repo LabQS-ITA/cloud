@@ -7,19 +7,40 @@ network:
       dhcp4: false
       dhcp6: false
 
+  bonds:
+    bond0:
+      dhcp4: false
+      dhcp6: false
+      interfaces:
+      - enp2s0
+
+  vlans:
+    vlan10:
+      id: 10
+      link: bond0
+      dhcp4: false
+      dhcp6: false
+      
   bridges:
     xenbr0:
-      dhcp4: no
-      dhcp6: no
+      interfaces:
+      - vlan10
       addresses:
       - 161.24.2.234/24
-      - 10.0.0.1/8
       routes:
       - to: default
         via: 161.24.2.1
+        metric: 100
+      - to: 161.24.2.0/24
+        via: 161.24.2.1
+        metric: 100
+        table: 100
+      routing-policy:
+      - from: 161.24.2.0/24
+        table: 100
+      dhcp4: false
+      dhcp6: false
       nameservers:
         addresses:
         - 161.24.23.180
         - 161.24.23.199
-      interfaces:
-      - enp2s0

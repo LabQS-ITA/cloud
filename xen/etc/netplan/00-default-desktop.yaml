@@ -4,20 +4,19 @@ network:
 
   ethernets:
     enp2s0:
-      dhcp4: no
-      dhcp6: no
+      dhcp4: false
+      dhcp6: false
 
   bridges:
     xenbr0:
       dhcp4: no
       dhcp6: no
       addresses:
-      - 161.24.2.234/16
+      - 161.24.2.234/24
       - 10.0.0.1/8
-      mtu: 1500
       routes:
       - to: default
-        via: 161.24.1.1
+        via: 161.24.2.1
       nameservers:
         addresses:
         - 161.24.23.180

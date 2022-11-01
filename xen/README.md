@@ -82,7 +82,7 @@ sysctl net.ipv4.ip_forward
 Adicionar *NAT* _forwarding_
 
 ```bash
-sudo iptables -t nat -A POSTROUTING -o enp2s0f1 -j MASQUERADE
+sudo iptables -t nat -A POSTROUTING -o enp2s0 -j MASQUERADE
 sudo dpkg-reconfigure iptables-persistent
 ```
 

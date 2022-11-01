@@ -27,7 +27,7 @@ network:
       - vlan10
       addresses:
       - 161.24.2.234/24
-      - 10.10.0.1/8
+      - 10.10.0.1/16
       routes:
       - to: default
         via: 161.24.2.1
@@ -39,14 +39,14 @@ network:
       - to: default
         via: 10.10.0.1
         metric: 200
-      - to: 10.10.0.0/8
+      - to: 10.10.0.0/16
         via: 10.10.0.1
         metric: 200
         table: 200
       routing-policy:
       - from: 161.24.2.0/24
         table: 100
-      - from: 10.10.0.0/8
+      - from: 10.10.0.0/16
         table: 200
       dhcp4: false
       dhcp6: false

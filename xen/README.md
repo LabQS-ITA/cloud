@@ -33,7 +33,6 @@ echo "gpes ALL=(ALL:ALL) ALL" | sudo tee /etc/sudoers.d/gpes
 
 ```bash
 sudo apt-get install -y xen-hypervisor-amd64
-
 sudo reboot
 ```
 
@@ -41,13 +40,20 @@ sudo reboot
 
 Arquivo `/etc/default/grub.d/xen.cfg`
 
+Opção com 4Gb:
+
+```ini
+GRUB_CMDLINE_XEN_DEFAULT="dom0_mem=4096M,max:4096M"
+```
+
+Opção com 10Gb:
+
 ```ini
 GRUB_CMDLINE_XEN_DEFAULT="dom0_mem=10794M,max:10794M"
 ```
 
 ```bash
 sudo update-grub
-
 sudo reboot
 ```
 

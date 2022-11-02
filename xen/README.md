@@ -42,7 +42,7 @@ sudo reboot
 Arquivo `/etc/default/grub.d/xen.cfg`
 
 ```ini
-GRUB_CMDLINE_XEN_DEFAULT="dom0_mem=10794M,max:10794M,max_loops=255"
+GRUB_CMDLINE_XEN_DEFAULT="dom0_mem=10794M,max:10794M"
 ```
 
 ```bash
@@ -70,13 +70,14 @@ sudo apt install -y iptables-persistent
 Arquivo `/etc/sysctl.conf`, remover o comentário da linha:
 
 ```ini
-net.ipv4.ip_forward=1
+net.ipv4.ip_forward = 1
+net.ipv4.conf.enp2s0.proxy_arp = 1
 ```
 
 Atualizar com o comando
 
 ```bash
-sysctl net.ipv4.ip_forward
+sysctl -p
 ```
 
 Adicionar *NAT* _forwarding_
@@ -169,17 +170,13 @@ bogus-priv
 resolv-file=/etc/resolv-dnsmasq.conf
 
 interface=xenbr0
-
-listen-address=127.0.0.1
-
+listen-address=10.10.0.1
 domain=labqs.ita.br
+dhcp-range=10.10.0.100,10.10.0.254,255.255.0.0
+dhcp-option=3,10.10.0.1
+dhcp-lease-max=253
 
 cache-size=1000
-
-dhcp-range=10.0.0.100,10.0.0.254,255.0.0.0
-dhcp-no-override
-dhcp-authoritative
-dhcp-lease-max=253
 ```
 
 Arquivo `/etc/netplan/00-default.yaml` define os endereços fixos das duas interfaces de rede, sendo que uma delas é associada à _bridge_ ligada ao _hypervisor_.
@@ -189,41 +186,44 @@ network:
   version: 2
   renderer: networkd
   ethernets:
-    enp2s0f0:
-      dhcp4: no
+    enp2s0:
+      dhcp4: false
+      dhcp6: false
+  bridges:
+    xenbr0:
       addresses:
-      - 161.24.23.103/24
-      routes:
-      - to: default
-        via: 161.24.23.1
+      - "161.24.2.234/24"
       nameservers:
         addresses:
         - 161.24.23.180
         - 161.24.23.199
-        search:
-        - labqs.ita.br
-        - ita.br
-
-    enp2s0f1:
-      dhcp4: no
-
-  bridges:
-    xenbr0:
-      dhcp4: no
-      addresses:
-      - 10.0.0.1/8
-      routes:
-      - to: 10.0.0.0/8
-        via: 161.24.23.1
-        on-link: true
+      dhcp4: false
+      dhcp6: false
       interfaces:
-      - enp2s0f1
-```
-
-Arquivo `/etc/xen/xl.conf` associa a ponte a ser utilizada pelo _hypervisor_.
-
-```ini
-vif.default.bridge="xenbr0"
+      - vlan10
+      routes:
+      - metric: 100
+        to: "default"
+        via: "161.24.2.1"
+      - metric: 100
+        table: 100
+        to: "161.24.2.0/24"
+        via: "161.24.2.1"
+      routing-policy:
+      - table: 100
+        from: "161.24.2.0/24"
+  bonds:
+    bond0:
+      dhcp4: false
+      dhcp6: false
+      interfaces:
+      - enp2s0
+  vlans:
+    vlan10:
+      dhcp4: false
+      dhcp6: false
+      id: 10
+      link: "bond0"
 ```
 
 Arquivo `/etc/xen-tools/role.d/labqs-sshd` para habilitar acesso *SSH* via porta 2222 para usuário *root*
@@ -245,7 +245,6 @@ else
     echo "Installation problem"
 fi
 
-
 #
 # Log our start
 #
@@ -255,7 +254,8 @@ logMessage Script $0 starting
 # Enable SSH access on port 2222 using password
 #
 sed -i 's/^#Port\s.*$/Port 2222/' ${prefix}/etc/ssh/sshd_config
-sed -i 's/^PasswordAuthentication\s.*$/PasswordAuthentication Yes/' ${prefix}/etc/ssh/sshd_config
+sed -i 's/^#PermitRootLogin\s.*$/PermitRootLogin yes/' ${prefix}/etc/ssh/sshd_config
+sed -i 's/^#PasswordAuthentication\s.*$/PasswordAuthentication yes/' ${prefix}/etc/ssh/sshd_config
 
 #
 #  Log our finish
@@ -271,7 +271,7 @@ A máquina virtual deve usar o prefixo assinalado pelo servidor *DHCP* para rece
 ```bash
 sudo xen-create-image \
 	--hostname='labqs-c1' \
-	--memory=2gb \
+	--memory=1gb \
 	--vcpus=2 \
 	--lvm=ubuntu-vg  \
     --size=5Gb \
@@ -279,16 +279,18 @@ sudo xen-create-image \
 	--randommac \
     --bridge=xenbr0 \
     --gateway=10.0.0.1 \
+    --role=labqs-sshd \
 	--pygrub \
 	--dist=bionic \
-    --accounts
+    --password=p4ssw0rd \
+    --verbose
 ```
 
 
 ### Extender o volume lógico
 
 ```bash
-# sudo lvextend -l +10%FREE /dev/ubuntu-vg/c1-disk
+sudo lvextend --size +1G /dev/ubuntu-vg/c1-disk
 ```
 
 
@@ -296,26 +298,6 @@ sudo xen-create-image \
 
 ```bash
 sudo xl create /etc/xen/labqs-c1.cfg
-```
-
-### Consultar IP
-
-#### Com ISC-DHCP
-
-```bash
-dhcp-lease-list
-```
-
-#### Com DNSMASQ
-
-```bash
-sudo cat /var/lib/misc/dnsmasq.leases
-```
-
-### Configuração inicial da VM
-
-```bash
-sudo xl console labqs-c1.cfg
 ```
 
 ### Acessar a VM
@@ -334,4 +316,3 @@ sudo xl create /etc/xen/labqs-c1.cfg
 ## TODO
 
 1. Configurar a comunicação entre a VM e o host para permitir acesso à internet
-1. Definir usuário inicial da VM

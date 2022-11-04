@@ -10,7 +10,7 @@ sudo xen-create-image \
 	--dhcp \
 	--randommac \
     --bridge=xenbr0 \
-    --gateway=10.0.0.1 \
+    --gateway=10.10.0.1 \
     --role=labqs-sshd \
 	--pygrub \
 	--dist=bionic \

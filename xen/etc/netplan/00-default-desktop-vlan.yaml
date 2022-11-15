@@ -26,7 +26,7 @@ network:
       dhcp4: false
       dhcp6: false
       interfaces:
-      - vlan16
+      - vlan31
       routes:
       - to: "default"
         via: "161.24.2.1"

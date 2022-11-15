@@ -83,14 +83,40 @@ net.ipv4.conf.enp2s0.proxy_arp = 1
 Atualizar com o comando
 
 ```bash
-sysctl -p
+sudo sysctl -p
 ```
 
-Adicionar *NAT* _forwarding_
+Adicionar *NAT* _forwarding_ evitando que **systemd-resolved** entre em conflito com o mapeamento (opção *! -o lo*)
 
 ```bash
-sudo iptables -t nat -A POSTROUTING -o bond0 -j MASQUERADE
+sudo iptables ! -o lo -t nat -A POSTROUTING -j MASQUERADE
 sudo dpkg-reconfigure iptables-persistent
+```
+
+```bash
+vi /etc/modules-load.d/br_netfilter.conf
+```
+
+`/etc/modules-load.d/br_netfilter.conf`
+
+```conf
+br_netfilter
+```
+
+
+
+ #### Excluir regras
+
+Listar a regra
+
+ ```bash
+ sudo iptables -L -t nat --line-numbers
+ ```
+
+Excluir pelo número da linha
+
+```bash
+sudo iptables -t nat -D POSTROUTING 1
 ```
 
 
@@ -281,10 +307,11 @@ sudo xen-create-image \
 	--vcpus=2 \
 	--lvm=ubuntu-vg  \
     --size=5Gb \
-	--dhcp \
+	--nodhcp \
+    --gateway=172.16.0.1 \
+    --ip=172.16.100.1 \
 	--randommac \
     --bridge=xenbr0 \
-    --gateway=10.0.0.1 \
     --role=labqs-sshd \
 	--pygrub \
 	--dist=bionic \

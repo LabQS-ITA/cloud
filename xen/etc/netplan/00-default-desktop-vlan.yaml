@@ -8,8 +8,8 @@ network:
       dhcp6: false
 
   vlans:
-    vlan16:
-      id: 16
+    vlan31:
+      id: 31
       link: enp2s0
       dhcp4: false
       dhcp6: false

@@ -10,6 +10,7 @@ sudo xen-create-image \
     --ip=172.31.100.2 \
     --netmask=172.31.0.0 \
     --broadcast=172.31.255.255 \
+    --netmask=255.255.0.0 \
     --gateway=172.31.0.1 \
     --nameserver=161.24.23.180 161.24.23.199 \
 	--randommac \

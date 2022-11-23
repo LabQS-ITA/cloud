@@ -7,26 +7,15 @@ network:
       dhcp4: false
       dhcp6: false
 
-  vlans:
-    vlan31:
-      id: 31
-      link: enp2s0
-      dhcp4: false
-      dhcp6: false
-
   bridges:
     xenbr0:
       addresses:
       - "161.24.2.234/24"
       - "172.31.0.1/16"
-      nameservers:
-        addresses:
-        - 161.24.23.180
-        - 161.24.23.199
       dhcp4: false
       dhcp6: false
       interfaces:
-      - vlan31
+      - enp2s0
       routes:
       - to: "default"
         via: "161.24.2.1"
@@ -47,6 +36,3 @@ network:
         table: 100
       - from: "172.31.0.0/16"
         table: 200
-      parameters:
-        stp: false
-        forward-delay: 4

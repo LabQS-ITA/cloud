@@ -12,7 +12,7 @@ sudo xen-create-image \
     --broadcast=172.31.255.255 \
     --netmask=255.255.0.0 \
     --gateway=172.31.0.1 \
-    --nameserver=161.24.23.180 161.24.23.199 \
+    --nameserver=161.24.23.180 \
 	--randommac \
     --bridge=xenbr0 \
     --role=labqs-sshd \

@@ -21,6 +21,8 @@ graph TD
     end
 ```
 
+<div style="page-break-after: always;"></div>
+
 O crescimento acontece de modo horizontal, adicionando-se mais servidores:
 
 ```mermaid
@@ -38,6 +40,8 @@ graph TD
         end
     end
 ```
+
+<div style="page-break-after: always;"></div>
 
 ## Proposta
 
@@ -69,6 +73,8 @@ graph TD
         end
     end
 ```
+
+<div style="page-break-after: always;"></div>
 
 Permitindo crescimento horizontal com a adição de servidores, e vertical usando mais a capacidade instalada de cada servidor:
 
@@ -216,7 +222,9 @@ Excluir pelo número da linha
 sudo iptables -t nat -D POSTROUTING 1
 ```
 
-## Habilitar ssd na VM
+<div style="page-break-after: always;"></div>
+
+## Habilitar ssh na VM
 
 Arquivo `/etc/xen-tools/role.d/labqs-sshd` para habilitar acesso *SSH* via porta 2222 para usuário *root*
 
@@ -255,6 +263,7 @@ sed -i 's/^#PasswordAuthentication\s.*$/PasswordAuthentication yes/' ${prefix}/e
 logMessage Script $0 finished
 ```
 
+<div style="page-break-after: always;"></div>
 
 ## Criar VMs
 
@@ -298,6 +307,12 @@ sudo xl create /etc/xen/labqs-c1.cfg
 
 ```bash
 ssh -p 2222 root@labqs-c1
+```
+
+### Acessar a VM via console
+
+```bash
+sudo xl console labqs-c1
 ```
 
 ### Recriar VM

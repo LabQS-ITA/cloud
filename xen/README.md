@@ -1,5 +1,113 @@
 # Xen Project
 
+## Configuração atual
+
+Atualmente servidores discretos possuem containers que isolam as aplicações:
+
+```mermaid
+graph TD
+    subgraph servidor 1
+        subgraph sistema operacional 1
+            subgraph containers 1
+                postgres1
+                app1
+                app1
+                postgres4
+                app7
+                app8
+                app9
+            end
+        end
+    end
+```
+
+O crescimento acontece de modo horizontal, adicionando-se mais servidores:
+
+```mermaid
+graph TD
+    subgraph servidor 1
+        subgraph sistema operacional 1
+            subgraph containers 1
+            end
+        end
+    end
+    subgraph servidor 2
+        subgraph sistema operacional 2
+            subgraph containers 2
+            end
+        end
+    end
+```
+
+## Proposta
+
+Utilizando um hipervisor podemos criar ambientes de pesquisa, desenvolvimento, simulações e testes discretos dentro do mesmo servidor
+
+```mermaid
+graph TD
+    subgraph servidor 3
+        subgraph hipervisor 1
+            subgraph maquina virtual 1
+                subgraph sistema operacional 1
+                    subgraph containers 1
+                        postgres3
+                        app5
+                        app6
+                    end
+                end
+            end
+            subgraph maquina virtual 2
+                subgraph sistema operacional 2
+                    subgraph containers 2
+                        postgres4
+                        app7
+                        app8
+                        app9
+                    end
+                end
+            end
+        end
+    end
+```
+
+Permitindo crescimento horizontal com a adição de servidores, e vertical usando mais a capacidade instalada de cada servidor:
+
+```mermaid
+graph TD
+    subgraph servidor 3
+        subgraph hipervisor 1
+            subgraph maquina virtual 1
+                subgraph sistema operacional 1
+                    subgraph containers 1
+                    end
+                end
+            end
+            subgraph maquina virtual 2
+                subgraph sistema operacional 2
+                    subgraph containers 2
+                    end
+                end
+            end
+        end
+    end
+    subgraph servidor 4
+        subgraph hipervisor 2
+            subgraph maquina virtual 3
+                subgraph sistema operacional 3
+                    subgraph containers 3
+                    end
+                end
+            end
+            subgraph maquina virtual 4
+                subgraph sistema operacional 4
+                    subgraph containers 4
+                    end
+                end
+            end
+        end
+    end 
+```
+
 ## Pré instalação Ubuntu
 
 ### Ajustar `hosts`
@@ -93,19 +201,8 @@ sudo iptables ! -o lo -t nat -A POSTROUTING -j MASQUERADE
 sudo dpkg-reconfigure iptables-persistent
 ```
 
-```bash
-vi /etc/modules-load.d/br_netfilter.conf
-```
 
-`/etc/modules-load.d/br_netfilter.conf`
-
-```conf
-br_netfilter
-```
-
-
-
- #### Excluir regras
+ #### Excluir regras (caso deseje reverter)
 
 Listar a regra
 
@@ -119,144 +216,7 @@ Excluir pelo número da linha
 sudo iptables -t nat -D POSTROUTING 1
 ```
 
-
-### Configuração serviço DHCP
-
-#### Opção ISC-DHCP
-
-Instalar serviço *ISC-DHCP*
-
-```bash
-sudo apt install -y isc-dhcp-server
-```
-
-Arquivo `/etc/default/isc-dhcp-server` ligado à _bridge_ para o _hypervisor_ de máquinas virtuais e a interface de rede física associada à _bridge_ (ver arquivo `/etc/netplan/00-default.yaml`).
-
-```ini
-DHCPDv4_CONF=/etc/dhcp/dhcpd.conf
-INTERFACESv4="xenbr0 enp2s0f1"
-INTERFACESv6=""
-```
-
-Arquivo `/etc/dhcp/dhcpd.conf` define um _pool_ de endereços para as máquinas virtuais cujo nome de _host_ iniciem por `labqs`.
-
-```ini
-option domain-name "labqs.ita.br";
-option domain-name-servers 161.24.23.180, 161.24.23.199; #ns1.example.org, ns2.example.org;
-
-default-lease-time 600;
-max-lease-time 7200;
-
-ddns-update-style none;
-deny declines;
-deny bootp;
-
-class "labqs" {
-    match if ( substring( option host-name, 0, 8 ) = "labqs" );
-}
-
-subnet 10.0.0.0 netmask 255.0.0.0 {
-    authoritative;
-    option routers 10.0.0.1;
-    pool {
-        range 10.0.0.100 10.0.0.254;
-        allow members of "labqs";
-    }
-}
-```
-
-#### Opção DNSMASQ
-
-Criar arquivo `\etc\resolv-dnsmasq.conf` (isto resolve problema ao desligar serviço *resolvd*).
-
-```bash
-sudo cp /etc/resolv.conf /etc/resolv-dnsmasq.conf
-```
-
-Instalar serviço *DNSMASQ*.
-
-```bash
-systemctl stop systemd-resolved
-systemctl mask systemd-resolved
-
-sudo apt install -y dnsmasq
-```
-
-Arquivo `/etc/resolv-dnsmasq.conf`
-
-```
-nameserver 127.0.0.53
-nameserver 161.24.23.180
-nameserver 161.24.23.199
-options edns0 trust-ad
-```
-
-Arquivo `/etc/dnsmasq.conf`.
-
-```ini
-port=53
-
-domain-needed
-bogus-priv
-
-resolv-file=/etc/resolv-dnsmasq.conf
-
-interface=xenbr0
-listen-address=10.10.0.1
-domain=labqs.ita.br
-dhcp-range=10.10.0.100,10.10.0.254,255.255.0.0
-dhcp-option=3,10.10.0.1
-dhcp-lease-max=253
-
-cache-size=1000
-```
-
-Arquivo `/etc/netplan/00-default.yaml` define os endereços fixos das duas interfaces de rede, sendo que uma delas é associada à _bridge_ ligada ao _hypervisor_.
-
-```yaml
-network:
-  version: 2
-  renderer: networkd
-  ethernets:
-    enp2s0:
-      dhcp4: false
-      dhcp6: false
-  bridges:
-    xenbr0:
-      addresses:
-      - "161.24.2.234/24"
-      nameservers:
-        addresses:
-        - 161.24.23.180
-        - 161.24.23.199
-      dhcp4: false
-      dhcp6: false
-      interfaces:
-      - vlan10
-      routes:
-      - metric: 100
-        to: "default"
-        via: "161.24.2.1"
-      - metric: 100
-        table: 100
-        to: "161.24.2.0/24"
-        via: "161.24.2.1"
-      routing-policy:
-      - table: 100
-        from: "161.24.2.0/24"
-  bonds:
-    bond0:
-      dhcp4: false
-      dhcp6: false
-      interfaces:
-      - enp2s0
-  vlans:
-    vlan10:
-      dhcp4: false
-      dhcp6: false
-      id: 10
-      link: "bond0"
-```
+## Habilitar ssd na VM
 
 Arquivo `/etc/xen-tools/role.d/labqs-sshd` para habilitar acesso *SSH* via porta 2222 para usuário *root*
 
@@ -298,24 +258,25 @@ logMessage Script $0 finished
 
 ## Criar VMs
 
-A máquina virtual deve usar o prefixo assinalado pelo servidor *DHCP* para receber corretamente um endereço de rede.
-
 ```bash
 sudo xen-create-image \
-	--hostname='labqs-c1' \
+	--hostname='c1.labqs.ita.br' \
 	--memory=1gb \
 	--vcpus=2 \
 	--lvm=ubuntu-vg  \
-    --size=5Gb \
-	--nodhcp \
-    --gateway=172.16.0.1 \
-    --ip=172.16.100.1 \
+    --size=20Gb \
+    --ip=172.31.100.1 \
+    --netmask=172.31.0.0 \
+    --broadcast=172.31.255.255 \
+    --netmask=255.255.0.0 \
+    --gateway=172.31.0.1 \
+    --nameserver=161.24.23.180 \
 	--randommac \
     --bridge=xenbr0 \
     --role=labqs-sshd \
 	--pygrub \
 	--dist=bionic \
-    --password=p4ssw0rd \
+    --password='c0r0n@' \
     --verbose
 ```
 
@@ -336,7 +297,7 @@ sudo xl create /etc/xen/labqs-c1.cfg
 ### Acessar a VM
 
 ```bash
-ssh root@labqs-c1
+ssh -p 2222 root@labqs-c1
 ```
 
 ### Recriar VM
@@ -345,7 +306,3 @@ ssh root@labqs-c1
 sudo xl destroy labqs-c1
 sudo xl create /etc/xen/labqs-c1.cfg
 ```
-
-## TODO
-
-1. Configurar a comunicação entre a VM e o host para permitir acesso à internet

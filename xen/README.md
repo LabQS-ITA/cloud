@@ -317,9 +317,27 @@ ssh -p 2222 root@labqs-c1
 sudo xl console labqs-c1
 ```
 
+<div style="page-break-after: always;"></div>
+
 ### Recriar VM
 
 ```bash
 sudo xl destroy labqs-c1
 sudo xl create /etc/xen/labqs-c1.cfg
+```
+
+### Remover a VM
+
+```bash
+sudo xl destroy c1.labqs.ita.br
+sudo rm /etc/xen/c1.labqs.ita.br.cfg
+sudo lvremove /dev/ubuntu-vg/c1.labqs.ita.br-swap --yes
+sudo lvremove /dev/ubuntu-vg/c1.labqs.ita.br-disk --yes
+```
+
+Caso o volume acuse que está em uso basta remove-lo da lista do sistema operacional (um dos dois):
+
+```bash
+sudo umount /dev/mapper/ubuntu--vg-c1.labqs.ita.br--disk
+sudo lvremove /dev/ubuntu-vg/c1.labqs.ita.br-disk --yes
 ```

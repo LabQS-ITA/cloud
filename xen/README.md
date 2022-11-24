@@ -114,6 +114,8 @@ graph TD
     end 
 ```
 
+# Configuração do ambiente
+
 ## Pré instalação Ubuntu
 
 ### Ajustar `hosts`

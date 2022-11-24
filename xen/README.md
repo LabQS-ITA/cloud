@@ -226,7 +226,7 @@ sudo iptables -t nat -D POSTROUTING 1
 
 <div style="page-break-after: always;"></div>
 
-## Habilitar ssh na VM
+## Habilitar ssh na Máquina Virtual
 
 Arquivo `/etc/xen-tools/role.d/labqs-sshd` para habilitar acesso *SSH* via porta 2222 para usuário *root*
 
@@ -267,7 +267,7 @@ logMessage Script $0 finished
 
 <div style="page-break-after: always;"></div>
 
-## Criar VMs
+## Criar Máquinas Virtuais
 
 ```bash
 sudo xen-create-image \
@@ -294,39 +294,41 @@ sudo xen-create-image \
 
 ### Extender o volume lógico
 
+Caso necessário é possível extender o volume alocado para a Máquina Virtual:
+
 ```bash
-sudo lvextend --size +1G /dev/ubuntu-vg/c1-disk
+sudo lvextend --size +1G /dev/ubuntu-vg/c1.labqs.ita.br-disk
 ```
 
 
-### Iniciar VM
+### Iniciar a Máquina Virtual
 
 ```bash
 sudo xl create /etc/xen/labqs-c1.cfg
 ```
 
-### Acessar a VM
+### Acessar a Máquina Virtual
 
 ```bash
-ssh -p 2222 root@labqs-c1
+ssh -p 2222 root@c1.labqs.ita.br
 ```
 
-### Acessar a VM via console
+### Acessar a Máquina Virtual via console
 
 ```bash
-sudo xl console labqs-c1
+sudo xl console c1.labqs.ita.br
 ```
 
 <div style="page-break-after: always;"></div>
 
-### Recriar VM
+### Recriar a Máquina Virtual
 
 ```bash
-sudo xl destroy labqs-c1
-sudo xl create /etc/xen/labqs-c1.cfg
+sudo xl destroy c1.labqs.ita.br
+sudo xl create /etc/xen/c1.labqs.ita.br.cfg
 ```
 
-### Remover a VM
+### Remover a Máquina Virtual
 
 ```bash
 sudo xl destroy c1.labqs.ita.br

@@ -310,16 +310,18 @@ sudo xl create /etc/xen/labqs-c1.cfg
 ### Acessar a Máquina Virtual
 
 ```bash
-ssh -p 2222 root@c1.labqs.ita.br
+ssh -p 2222 root@172.31.100.1
 ```
+
+> **OBSERVAÇÃO** - pode ser necessário apagar uma entrada anterior para a máquina virtual no arquivo `~/.ssh/know_hosts` caso ela tenha sido recriada.
+
+<div style="page-break-after: always;"></div>
 
 ### Acessar a Máquina Virtual via console
 
 ```bash
 sudo xl console c1.labqs.ita.br
 ```
-
-<div style="page-break-after: always;"></div>
 
 ### Recriar a Máquina Virtual
 
@@ -342,4 +344,24 @@ Caso o volume acuse que está em uso basta remove-lo da lista do sistema operaci
 ```bash
 sudo umount /dev/mapper/ubuntu--vg-c1.labqs.ita.br--disk
 sudo lvremove /dev/ubuntu-vg/c1.labqs.ita.br-disk --yes
+```
+
+# TODO
+
+```mermaid
+journey
+    title Melhorias e outras pendências
+    section Configurações Lab
+        Containers para serviços: 5: Me
+        Máquinas virtuais para ambientes: 3: Me
+    section Servidor Lab
+        Especificar servidor: 3: Me, Marcos
+        Comprar servidor: 1: Marcos
+        Receber servidor: 1: Marcos
+        Configurar servidor: 1: Me
+    section Servidor IA-PLN
+        Especificar servidor: 5: Me
+        Comprar servidor: 5: Marcos
+        Receber servidor: 3: Marcos
+        Configurar servidor: 1: Me
 ```

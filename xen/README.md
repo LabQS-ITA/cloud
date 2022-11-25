@@ -128,12 +128,15 @@ No arquivo `/etc/hosts`, eliminar linha
 
 ### Atualizar sistema
 
-```bash
+```sh
 sudo apt update -y && apt upgrade -y
 ```
+
+<div style="page-break-after: always;"></div>
+
 ### Criar usuários
 
-```bash
+```sh
 sudo adduser --disabled-password --gecos "" gpes
 sudo usermod --password $(echo c0r0n@ | openssl passwd -1 -stdin) gpes
 sudo usermod -a -G sudo gpes
@@ -141,13 +144,13 @@ sudo usermod -a -G sudo gpes
 
 #### Autorizar para sudo
 
-```bash
+```sh
 echo "gpes ALL=(ALL:ALL) ALL" | sudo tee /etc/sudoers.d/gpes
 ```
 
 ## Instalar Xen Hypervisor
 
-```bash
+```sh
 sudo apt-get install -y xen-hypervisor-amd64
 sudo reboot
 ```
@@ -168,22 +171,24 @@ Opção com 10Gb:
 GRUB_CMDLINE_XEN_DEFAULT="dom0_mem=10794M,max:10794M"
 ```
 
-```bash
+```sh
 sudo update-grub
 sudo reboot
 ```
 
 ### Xen-Tools
 
-```bash
+```sh
 sudo apt install -y xen-tools
 ```
+
+<div style="page-break-after: always;"></div>
 
 ## Configurar redes
 
 Instalar utilitários
 
-```bash
+```sh
 sudo apt install -y iptables-persistent
 ```
 
@@ -198,13 +203,13 @@ net.ipv4.conf.enp2s0.proxy_arp = 1
 
 Atualizar com o comando
 
-```bash
+```sh
 sudo sysctl -p
 ```
 
 Adicionar *NAT* _forwarding_ evitando que **systemd-resolved** entre em conflito com o mapeamento (opção *! -o lo*)
 
-```bash
+```sh
 sudo iptables ! -o lo -t nat -A POSTROUTING -j MASQUERADE
 sudo dpkg-reconfigure iptables-persistent
 ```
@@ -214,13 +219,13 @@ sudo dpkg-reconfigure iptables-persistent
 
 Listar a regra
 
- ```bash
+ ```sh
  sudo iptables -L -t nat --line-numbers
  ```
 
 Excluir pelo número da linha
 
-```bash
+```sh
 sudo iptables -t nat -D POSTROUTING 1
 ```
 
@@ -230,7 +235,7 @@ sudo iptables -t nat -D POSTROUTING 1
 
 Arquivo `/etc/xen-tools/role.d/labqs-sshd` para habilitar acesso *SSH* via porta 2222 para usuário *root*
 
-```bash
+```sh
 #!/bin/sh
 #
 #  This role enable remote SSH access via port 2222
@@ -269,7 +274,7 @@ logMessage Script $0 finished
 
 ## Criar Máquinas Virtuais
 
-```bash
+```sh
 sudo xen-create-image \
 	--hostname='c1.labqs.ita.br' \
 	--memory=1gb \
@@ -296,20 +301,20 @@ sudo xen-create-image \
 
 Caso necessário é possível extender o volume alocado para a Máquina Virtual:
 
-```bash
+```sh
 sudo lvextend --size +1G /dev/ubuntu-vg/c1.labqs.ita.br-disk
 ```
 
 
 ### Iniciar a Máquina Virtual
 
-```bash
+```sh
 sudo xl create /etc/xen/labqs-c1.cfg
 ```
 
 ### Acessar a Máquina Virtual
 
-```bash
+```sh
 ssh -p 2222 root@172.31.100.1
 ```
 
@@ -319,29 +324,55 @@ ssh -p 2222 root@172.31.100.1
 
 ### Acessar a Máquina Virtual via console
 
-```bash
+```sh
 sudo xl console c1.labqs.ita.br
 ```
 
+### Acessar a máquina virtual externamente
+
+```sh
+sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 80 -j DNAT --to-destination 172.31.100.1:80
+sudo dpkg-reconfigure iptables-persistent
+```
+
+### Configurar redirect HTTP
+
+Observar que a configuração dos servidores **HTTPD* possuem os seguintes parâmetros:
+
+```xml
+<VirtualHost *:80>
+  
+    ServerName ${LAB_DOMAIN}
+
+    Redirect permanent / https://${LAB_DOMAIN}/
+
+</VirtualHost>
+```
+
+A variável `$LAB_DOMAIN` é geralmente iniciada com o domínio registrado no **DNS** para o servidor em questão, o que pode causar um redirect para um dos servidores do **LabQS** caso a configuração dos novos servidores não seja modificada corretamente.
+
+
 ### Recriar a Máquina Virtual
 
-```bash
+```sh
 sudo xl destroy c1.labqs.ita.br
 sudo xl create /etc/xen/c1.labqs.ita.br.cfg
 ```
 
 ### Remover a Máquina Virtual
 
-```bash
+```sh
 sudo xl destroy c1.labqs.ita.br
 sudo rm /etc/xen/c1.labqs.ita.br.cfg
 sudo lvremove /dev/ubuntu-vg/c1.labqs.ita.br-swap --yes
 sudo lvremove /dev/ubuntu-vg/c1.labqs.ita.br-disk --yes
 ```
 
+<div style="page-break-after: always;"></div>
+
 Caso o volume acuse que está em uso basta remove-lo da lista do sistema operacional (um dos dois):
 
-```bash
+```sh
 sudo umount /dev/mapper/ubuntu--vg-c1.labqs.ita.br--disk
 sudo lvremove /dev/ubuntu-vg/c1.labqs.ita.br-disk --yes
 ```
@@ -358,10 +389,12 @@ journey
         Especificar servidor: 3: Me, Marcos
         Comprar servidor: 1: Marcos
         Receber servidor: 1: Marcos
-        Configurar servidor: 1: Me
+        Configurar servidor: 1: Me, Marcos
+        Configurar redes: 1: Me, Cássio
     section Servidor IA-PLN
         Especificar servidor: 5: Me
         Comprar servidor: 5: Marcos
         Receber servidor: 3: Marcos
-        Configurar servidor: 1: Me
+        Configurar servidor: 1: Me, Marcos
+        Configurar redes: 1: Me, Cássio
 ```

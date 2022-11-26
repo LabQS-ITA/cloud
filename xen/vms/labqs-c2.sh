@@ -17,6 +17,6 @@ sudo xen-create-image \
     --bridge=xenbr0 \
     --role=labqs-sshd \
 	--pygrub \
-	--dist=bionic \
+	--dist=bullseye \
     --password='c0r0n@' \
     --verbose

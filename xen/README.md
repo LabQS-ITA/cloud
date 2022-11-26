@@ -413,22 +413,34 @@ sudo lvremove /dev/ubuntu-vg/c1.labqs.ita.br-disk --yes
 
 ```mermaid
 journey
-    title Melhorias e outras pendências
-    section Configurações Lab
+    title LabQS
+    section Configurações
         Containers para serviços: 5: Me
         Máquinas virtuais para ambientes: 5: Me
+        Divulgar ambiente: 3: Me
+```
+
+```mermaid
+journey
+    title LabQS
     section Servidor IA-PLN
         Especificar servidor: 5: Me
         Comprar servidor: 5: Marcos
         Receber servidor: 3: Marcos
         Configurar servidor: 1: Me, Marcos
         Configurar redes: 1: Me, Cássio
-        Testar servidor: 1: Me, Wesley, Aline,
-    section Servidor Lab
+        Testar servidor: 1: Me, Wesley, Aline
+```
+
+```mermaid
+journey
+    title LabQS
+    section Servidor ES-TIH
         Especificar servidor: 3: Me, Marcos
         Comprar servidor: 1: Marcos
         Receber servidor: 1: Marcos
         Configurar servidor: 1: Me, Marcos
         Configurar redes: 1: Me, Cássio
         Testar servidor: 1: Me, Henrique
+        Divulgar disponibilidade do ambiente: 1: Me
 ```

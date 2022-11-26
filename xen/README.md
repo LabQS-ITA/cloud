@@ -328,10 +328,44 @@ sudo xl console c1.labqs.ita.br
 
 ### Acessar a máquina virtual externamente
 
+#### Exemplo de roteamento de porta autorizada para a DMZ
+
 ```sh
 sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 80 -j DNAT --to-destination 172.31.100.1:80
 sudo dpkg-reconfigure iptables-persistent
 ```
+
+#### Exemplo de roteamento de porta não autorizada para a DMZ
+
+Do mesmo modo que a porta autorizada, é preciso criar a rota
+
+```sh
+sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 5400 -j DNAT --to-destination 172.31.100.1:5400
+sudo dpkg-reconfigure iptables-persistent
+```
+
+Vamos usar como modelo a instalação do **Postgres** no container **Docker**, que está configurado deste modo:
+
+```yaml
+    ports:
+      - '5400:5432'
+```
+
+O endereço IP pode ser encontrado nas definições da maquina virtual (arquivo `common/config`):
+
+```sh
+export POSTGRES_HOST=172.16.2.200
+```
+
+Em seguida podemos acessar o serviço **Postgres** via **VPN** acessando a porta `5400`:
+
+![Dados do host Postgres](./images/01-host-postgres.png)
+
+Devemos também informar uma conexão com o _host_ via túnel _SSH_ com as credenciais da **VPN** (no exemplo abaixo estamos usando um arquivo com chave _pública_/_privada_):
+
+![Tunel SSH](./images/02-tunnel-ssh.png)
+
+## Ajustes para executar o ambiente LabQS sem certificados digitais
 
 ### Configurar redirect HTTP
 

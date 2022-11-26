@@ -328,16 +328,22 @@ sudo xl console c1.labqs.ita.br
 
 ### Acessar a máquina virtual externamente
 
-#### Exemplo de roteamento de porta autorizada para a DMZ
+É possível acessar a máquina virtual externamente por meio de uma porta do _host_, porém caso deseje acessar uma porta específica (como a porta **80** para aplicações internet), então a máquina virtual deve ter um endereço **IP** próprio para ser exposta à internet.
+
+No primeiro caso (_acesso à porta **80** de uma aplicação internet rodando na máquina virtual_), a porta 80 do _host_ poderá ser mapeada diretamente para a máquina virtual:
+
+#### Exemplo de roteamento de porta autorizada para a **DMZ**
 
 ```sh
 sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 80 -j DNAT --to-destination 172.31.100.1:80
 sudo dpkg-reconfigure iptables-persistent
 ```
 
-#### Exemplo de roteamento de porta não autorizada para a DMZ
+Outro caso é o de mapear dois serviços distintos que utilizam a mesma porta em máquinas virtuais diferentes. Vamos supor que temos dois serviços **Postgres** instalados em duas máquinas virtuais diferentes, e ambos utilizam a mesma porta **5400**. O primeiro poderá usar a porta **5400** do _host_, porém o segundo deverá usar uma porta diferente.
 
-Do mesmo modo que a porta autorizada, é preciso criar a rota
+#### Exemplo de roteamento de porta não autorizada para a **DMZ**
+
+Do mesmo modo que a porta autorizada, é preciso criar a rota:
 
 ```sh
 sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 5400 -j DNAT --to-destination 172.31.100.1:5400
@@ -350,6 +356,8 @@ Vamos usar como modelo a instalação do **Postgres** no container **Docker**, q
     ports:
       - '5400:5432'
 ```
+
+<div style="page-break-after: always;"></div>
 
 O endereço IP é o definido para a máquina virtual (extraído do _script_ de criação da máquina virtual logo mais acima):
 
@@ -364,6 +372,19 @@ Em seguida podemos acessar o serviço **Postgres** via **VPN** acessando a porta
 Devemos também informar uma conexão com o _host_ via túnel _SSH_ com as credenciais da **VPN** (no exemplo abaixo estamos usando um arquivo com chave _pública_/_privada_):
 
 ![Tunel SSH](./images/02-tunnel-ssh.png)
+
+<div style="page-break-after: always;"></div>
+
+#### Exemplo de roteamento de porta não autorizada para a **DMZ** para um segundo servidor **Postgres** na mesma porta
+
+Novamente é preciso criar uma rota, só que desta vez mapeada para outra porta no _host_ ao invés de usar a mesma porta da máquina virtual:
+
+```sh
+sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 5300 -j DNAT --to-destination 172.31.100.1:5400
+sudo dpkg-reconfigure iptables-persistent
+```
+
+Os procedimentos para conexão serão os mesmos, só que desta vez utilizando a porta **5300** ao invés da **5400** utilizada no exemplo anterior.
 
 ## Ajustes para executar o ambiente LabQS sem certificados digitais
 

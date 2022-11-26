@@ -167,7 +167,7 @@ Arquivo `/etc/default/grub.d/xen.cfg`
 Opção com 16Gb:
 
 ```ini
-GRUB_CMDLINE_XEN_DEFAULT="dom0_mem=16384M,max=24576M"
+GRUB_CMDLINE_XEN_DEFAULT="dom0_mem=2048M,max=2048M"
 ```
 
 ```sh
@@ -184,12 +184,6 @@ sudo apt install -y xen-tools
 <div style="page-break-after: always;"></div>
 
 ## Configurar redes
-
-Instalar utilitários
-
-```sh
-sudo apt install -y iptables-persistent
-```
 
 ### Gateway interno
 
@@ -209,7 +203,8 @@ Adicionar *NAT* _forwarding_ evitando que **systemd-resolved** entre em conflito
 
 ```sh
 sudo iptables ! -o lo -t nat -A POSTROUTING -j MASQUERADE
-sudo dpkg-reconfigure iptables-persistent
+sudo iptables-save | sudo tee /etc/iptables/rules.v4
+sudo ip6tables-save | sudo tee /etc/iptables/rules.v6
 ```
 
 
@@ -225,6 +220,8 @@ Excluir pelo número da linha
 
 ```sh
 sudo iptables -t nat -D POSTROUTING 1
+sudo iptables-save | sudo tee /etc/iptables/rules.v4
+sudo ip6tables-save | sudo tee /etc/iptables/rules.v6
 ```
 
 <div style="page-break-after: always;"></div>
@@ -336,7 +333,8 @@ No primeiro caso (_acesso à porta **80** de uma aplicação internet rodando na
 
 ```sh
 sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 80 -j DNAT --to-destination 172.31.100.1:80
-sudo dpkg-reconfigure iptables-persistent
+sudo iptables-save | sudo tee /etc/iptables/rules.v4
+sudo ip6tables-save | sudo tee /etc/iptables/rules.v6
 ```
 
 Outro caso é o de mapear dois serviços distintos que utilizam a mesma porta em máquinas virtuais diferentes. Vamos supor que temos dois serviços **Postgres** instalados em duas máquinas virtuais diferentes, e ambos utilizam a mesma porta **5400**. O primeiro poderá usar a porta **5400** do _host_, porém o segundo deverá usar uma porta diferente.
@@ -347,7 +345,8 @@ Do mesmo modo que a porta autorizada, é preciso criar a rota:
 
 ```sh
 sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 5400 -j DNAT --to-destination 172.31.100.1:5400
-sudo dpkg-reconfigure iptables-persistent
+sudo iptables-save | sudo tee /etc/iptables/rules.v4
+sudo ip6tables-save | sudo tee /etc/iptables/rules.v6
 ```
 
 Vamos usar como modelo a instalação do **Postgres** no container **Docker**, que está configurado deste modo:
@@ -381,7 +380,8 @@ Novamente é preciso criar uma rota, só que desta vez mapeada para outra porta 
 
 ```sh
 sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 5300 -j DNAT --to-destination 172.31.100.1:5400
-sudo dpkg-reconfigure iptables-persistent
+sudo iptables-save | sudo tee /etc/iptables/rules.v4
+sudo ip6tables-save | sudo tee /etc/iptables/rules.v6
 ```
 
 Os procedimentos para conexão serão os mesmos, só que desta vez utilizando a porta **5300** ao invés da **5400** utilizada no exemplo anterior.

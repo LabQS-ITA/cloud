@@ -139,7 +139,6 @@ sudo apt update -y && apt upgrade -y
 ```sh
 sudo adduser --disabled-password --gecos "" gpes
 sudo usermod --password $(echo c0r0n@ | openssl passwd -1 -stdin) gpes
-sudo usermod -a -G sudo gpes
 ```
 
 #### Autorizar para sudo
@@ -165,10 +164,10 @@ Opção com 4Gb:
 GRUB_CMDLINE_XEN_DEFAULT="dom0_mem=4096M,max:4096M"
 ```
 
-Opção com 10Gb:
+Opção com 16Gb:
 
 ```ini
-GRUB_CMDLINE_XEN_DEFAULT="dom0_mem=10794M,max:10794M"
+GRUB_CMDLINE_XEN_DEFAULT="dom0_mem=16384M,max=16384M"
 ```
 
 ```sh

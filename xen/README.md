@@ -351,10 +351,10 @@ Vamos usar como modelo a instalação do **Postgres** no container **Docker**, q
       - '5400:5432'
 ```
 
-O endereço IP pode ser encontrado nas definições da maquina virtual (arquivo `common/config`):
+O endereço IP é o definido para a máquina virtual (extraído do _script_ de criação da máquina virtual logo mais acima):
 
 ```sh
-export POSTGRES_HOST=172.16.2.200
+    --ip=172.31.100.1 \
 ```
 
 Em seguida podemos acessar o serviço **Postgres** via **VPN** acessando a porta `5400`:
@@ -399,8 +399,6 @@ sudo rm /etc/xen/c1.labqs.ita.br.cfg
 sudo lvremove /dev/ubuntu-vg/c1.labqs.ita.br-swap --yes
 sudo lvremove /dev/ubuntu-vg/c1.labqs.ita.br-disk --yes
 ```
-
-<div style="page-break-after: always;"></div>
 
 Caso o volume acuse que está em uso basta remove-lo da lista do sistema operacional (um dos dois):
 

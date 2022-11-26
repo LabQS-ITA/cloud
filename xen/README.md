@@ -416,17 +416,19 @@ journey
     title Melhorias e outras pendências
     section Configurações Lab
         Containers para serviços: 5: Me
-        Máquinas virtuais para ambientes: 3: Me
-    section Servidor Lab
-        Especificar servidor: 3: Me, Marcos
-        Comprar servidor: 1: Marcos
-        Receber servidor: 1: Marcos
-        Configurar servidor: 1: Me, Marcos
-        Configurar redes: 1: Me, Cássio
+        Máquinas virtuais para ambientes: 5: Me
     section Servidor IA-PLN
         Especificar servidor: 5: Me
         Comprar servidor: 5: Marcos
         Receber servidor: 3: Marcos
         Configurar servidor: 1: Me, Marcos
         Configurar redes: 1: Me, Cássio
+        Testar servidor: 1: Me, Wesley, Aline,
+    section Servidor Lab
+        Especificar servidor: 3: Me, Marcos
+        Comprar servidor: 1: Marcos
+        Receber servidor: 1: Marcos
+        Configurar servidor: 1: Me, Marcos
+        Configurar redes: 1: Me, Cássio
+        Testar servidor: 1: Me, Henrique
 ```

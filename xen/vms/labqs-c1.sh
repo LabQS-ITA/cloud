@@ -15,7 +15,7 @@ sudo xen-create-image \
     --nameserver=161.24.23.180 \
 	--randommac \
     --bridge=xenbr0 \
-    --role=labqs-sshd \
+    --role=labqs \
 	--pygrub \
 	--dist=bullseye \
     --password='c0r0n@' \

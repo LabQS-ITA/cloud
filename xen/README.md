@@ -417,7 +417,7 @@ journey
     section Configurações
         Containers para serviços: 5: Me
         Máquinas virtuais para ambientes: 5: Me
-        Divulgar ambiente: 3: Me
+        Divulgar disponibilidade: 3: Me
 ```
 
 <div style="page-break-after: always;"></div>
@@ -434,6 +434,7 @@ journey
         Configurar servidor: 1: Me, Marcos
         Configurar redes: 1: Me, Cássio
         Testar servidor: 1: Me, Wesley, Aline
+        Divulgar disponibilidade: 1: Me
 ```
 
 <div style="page-break-after: always;"></div>
@@ -450,5 +451,5 @@ journey
         Configurar servidor: 1: Me, Marcos
         Configurar redes: 1: Me, Cássio
         Testar servidor: 1: Me, Henrique
-        Divulgar disponibilidade do ambiente: 1: Me
+        Divulgar disponibilidade: 1: Me
 ```

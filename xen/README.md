@@ -156,18 +156,18 @@ sudo reboot
 
 ### Configurar memória Xen
 
-Arquivo `/etc/default/grub.d/xen.cfg`
+Inspecionar quanto de memória temos disponível:
 
-Opção com 4Gb:
-
-```ini
-GRUB_CMDLINE_XEN_DEFAULT="dom0_mem=4096M,max:4096M"
+```sh
+sudo lshw -short -class memory
 ```
+
+Arquivo `/etc/default/grub.d/xen.cfg`
 
 Opção com 16Gb:
 
 ```ini
-GRUB_CMDLINE_XEN_DEFAULT="dom0_mem=16384M,max=16384M"
+GRUB_CMDLINE_XEN_DEFAULT="dom0_mem=16384M,max=24576M"
 ```
 
 ```sh

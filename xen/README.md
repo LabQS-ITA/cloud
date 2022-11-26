@@ -197,7 +197,6 @@ Arquivo `/etc/sysctl.conf`, remover o comentário da linha:
 
 ```ini
 net.ipv4.ip_forward = 1
-net.ipv4.conf.enp2s0.proxy_arp = 1
 ```
 
 Atualizar com o comando
@@ -232,7 +231,7 @@ sudo iptables -t nat -D POSTROUTING 1
 
 ## Habilitar ssh na Máquina Virtual
 
-Arquivo `/etc/xen-tools/role.d/labqs-sshd` para habilitar acesso *SSH* via porta 2222 para usuário *root*
+Arquivo `/etc/xen-tools/role.d/labqs-sshd` para habilitar acesso *SSH* via porta 2222 para usuário *root* (modificar para torná-lo executável):
 
 ```sh
 #!/bin/sh
@@ -308,7 +307,7 @@ sudo lvextend --size +1G /dev/ubuntu-vg/c1.labqs.ita.br-disk
 ### Iniciar a Máquina Virtual
 
 ```sh
-sudo xl create /etc/xen/labqs-c1.cfg
+sudo xl create /etc/xen/c1.labqs.ita.br.cfg
 ```
 
 ### Acessar a Máquina Virtual

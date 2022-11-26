@@ -390,7 +390,7 @@ Os procedimentos para conexão serão os mesmos, só que desta vez utilizando a 
 
 ### Configurar redirect HTTP
 
-Observar que a configuração dos servidores **HTTPD* possuem os seguintes parâmetros:
+Observar que a configuração dos servidores **HTTPD** possuem os seguintes parâmetros:
 
 ```xml
 <VirtualHost *:80>

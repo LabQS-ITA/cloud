@@ -228,7 +228,7 @@ sudo ip6tables-save | sudo tee /etc/iptables/rules.v6
 
 ## Habilitar ssh na Máquina Virtual
 
-Arquivo `/etc/xen-tools/role.d/labqs-sshd` para habilitar acesso *SSH* via porta 2222 para usuário *root* (modificar para torná-lo executável):
+Arquivo `/etc/xen-tools/role.d/labqs` para habilitar acesso *SSH* via porta 2222 para usuário *root* (modificar para torná-lo executável):
 
 ```sh
 #!/bin/sh

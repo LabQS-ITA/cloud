@@ -327,12 +327,13 @@ sudo xl console c1.labqs.ita.br
 
 É possível acessar a máquina virtual externamente por meio de uma porta do _host_, porém caso deseje acessar uma porta específica (como a porta **80** para aplicações internet), então a máquina virtual deve ter um endereço **IP** próprio para ser exposta à internet.
 
-No primeiro caso (_acesso à porta **80** de uma aplicação internet rodando na máquina virtual_), a porta 80 do _host_ poderá ser mapeada diretamente para a máquina virtual:
+No primeiro caso (_acesso às portas **80** e **443** de uma aplicação internet rodando na máquina virtual_), a porta 80 do _host_ poderá ser mapeada diretamente para a máquina virtual:
 
 #### Exemplo de roteamento de porta autorizada para a **DMZ**
 
 ```sh
 sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 80 -j DNAT --to-destination 172.31.100.1:80
+sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 443 -j DNAT --to-destination 172.31.100.1:443
 sudo iptables-save | sudo tee /etc/iptables/rules.v4
 sudo ip6tables-save | sudo tee /etc/iptables/rules.v6
 ```

@@ -30,7 +30,7 @@ sed -i 's/^#PasswordAuthentication\s.*$/PasswordAuthentication yes/' ${prefix}/e
 # Change localtime
 #
 rm ${prefix}/etc/localtime
-ln -s ${prefix}/usr/share/zoneinfo/America ${prefix}/etc/localtime
+ln -s ${prefix}/usr/share/zoneinfo/America/Sao_Paulo ${prefix}/etc/localtime
 
 #
 #  Log our finish

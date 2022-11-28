@@ -1,5 +1,10 @@
 FROM ubuntu:focal
 
+EXPOSE 8080
+EXPOSE 8443
+EXPOSE 8250
+EXPOSE 9090
+
 RUN DEBIAN_FRONTEND=noninteractive && \
         apt-get update && \ 
         apt-get upgrade -y && \

@@ -27,6 +27,11 @@ sed -i 's/^#PermitRootLogin\s.*$/PermitRootLogin yes/' ${prefix}/etc/ssh/sshd_co
 sed -i 's/^#PasswordAuthentication\s.*$/PasswordAuthentication yes/' ${prefix}/etc/ssh/sshd_config
 
 #
+# Change timezone
+#
+sed -i 's/Etc\/UTC/America\/Sao_Paulo/' ${prefix}/etc/timezone
+
+#
 #  Log our finish
 #
 logMessage Script $0 finished

@@ -1,6 +1,6 @@
 FROM ubuntu:focal
 
-RUN ENV DEBIAN_FRONTEND=noninteractive && \
+RUN DEBIAN_FRONTEND=noninteractive && \
         apt-get update && \ 
         apt-get upgrade -y && \
         apt-get install -y wget gnupg curl openjdk-11-jdk mysql-server && \ 

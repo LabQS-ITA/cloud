@@ -1,6 +1,7 @@
 FROM ubuntu:focal
 
-RUN apt-get update && \ 
+RUN ENV DEBIAN_FRONTEND=noninteractive && \
+        apt-get update && \ 
         apt-get upgrade -y && \
         apt-get install -y wget gnupg curl openjdk-11-jdk mysql-server && \ 
         wget -O - http://download.cloudstack.org/release.asc | apt-key add - && \

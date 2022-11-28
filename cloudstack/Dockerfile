@@ -1,12 +1,13 @@
 FROM ubuntu:focal
 
+ARG DEBIAN_FRONTEND=noninteractive
+
 EXPOSE 8080
 EXPOSE 8443
 EXPOSE 8250
 EXPOSE 9090
 
-RUN DEBIAN_FRONTEND=noninteractive && \
-        apt-get update && \ 
+RUN apt-get update && \ 
         apt-get upgrade -y && \
         apt-get install -y wget gnupg curl openjdk-11-jdk mysql-server && \ 
         wget -O - http://download.cloudstack.org/release.asc | apt-key add - && \

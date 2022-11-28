@@ -18,7 +18,6 @@ RUN apt-get update && \
 
 COPY cloudstack.cnf /etc/mysql/conf.d/cloudstack.cnf
 
-RUN systemctl restart mysql.service
-
-RUN cloudstack-setup-databases maint:'c0r0n@'@localhost --deploy-as=root -m 'c0r0n@' -k 'c0r0n@' -i 127.0.0.1 && \
+RUN systemctl restart mysql.service && \
+        cloudstack-setup-databases maint:'c0r0n@'@localhost --deploy-as=root -m 'c0r0n@' -k 'c0r0n@' -i 127.0.0.1 && \
         cloudstack-setup-management

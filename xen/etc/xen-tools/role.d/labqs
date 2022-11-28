@@ -27,12 +27,6 @@ sed -i 's/^#PermitRootLogin\s.*$/PermitRootLogin yes/' ${prefix}/etc/ssh/sshd_co
 sed -i 's/^#PasswordAuthentication\s.*$/PasswordAuthentication yes/' ${prefix}/etc/ssh/sshd_config
 
 #
-# Change localtime
-#
-rm ${prefix}/etc/localtime
-ln -s /usr/share/zoneinfo/America/Sao_Paulo ${prefix}/etc/localtime
-
-#
 #  Log our finish
 #
 logMessage Script $0 finished

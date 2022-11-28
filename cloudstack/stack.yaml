@@ -1,0 +1,9 @@
+services:
+
+  cloudstack:
+    container_name: cloudstack
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: labqs/cloudstack:latest
+    restart: unless-stopped

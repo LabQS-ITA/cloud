@@ -1,89 +1,133 @@
-# Apache CloudStack
+# Serviços em nuvem do **LabQS**
 
-[Apache CloudStack] (https://docs.cloudstack.apache.org/en/latest/)
+## Configuração do ambiente de nuvem
 
-## Instalação
+Um servidor gerenciador executando CloudStack onde serão criados os ambientes de serviços de computação, armazenamento e redes para os usuários finais:
 
-Instalar CloudStack numa máquina virtual sob o hipervisor rodando **Ubuntu**:
-
-```sh
-ssh -p 2222 root@172.31.100.1
+```mermaid
+graph TD
+    subgraph servidor Gerenciador
+        subgraph hipervisor 1
+            subgraph maquina virtual 1
+                subgraph sistema operacional 1
+                    subgraph containers 1
+                        MySQL
+                        RabbitMQ
+                        CloudStack
+                    end
+                end
+            end
+        end
+    end
 ```
 
-Obter versão mais recente:
+Os servidores para serviços de computação e armazenamento deverão contar com hipervisores para provisionamento de máquinas virtuais e containers para isolamento de projetos e serviços:
 
-```sh
-apt-get update && apt-get upgrade -y
-apt-get install -y wget gnupg curl openjdk-11-jdk mysql-server
-wget -O - http://download.cloudstack.org/release.asc | apt-key add -
-echo deb http://download.cloudstack.org/ubuntu focal 4.17 | tee -a /etc/apt/sources.list.d/cloudstack.list
-apt-get update
+```mermaid
+graph TD
+    subgraph servidor 2
+        subgraph hipervisor 1
+            subgraph maquina virtual 1
+                subgraph sistema operacional 1
+                    subgraph containers 1
+                        Postgres
+                        HTTPD
+                        App1
+                        App2
+                    end
+                end
+            end
+        end
+    end
 ```
 
-Instalar o servidor de gerenciamento
-
-```sh
-apt-get install -y cloudstack-management cloudstack-agent cloudstack-usage
-systemctl stop cloudstack-agent.service cloudstack-management.service cloudstack-usage.service
+```mermaid
+graph TD
+    subgraph servidor 3
+        subgraph hipervisor 1
+            subgraph maquina virtual 2
+                subgraph sistema operacional 1
+                    subgraph containers 1
+                        Postgres
+                        HTTPD
+                        App3
+                        App4
+                    end
+                end
+            end
+            subgraph maquina virtual 1
+                subgraph sistema operacional 1
+                    subgraph containers 1
+                        Postgres
+                        HTTPD
+                        App5
+                        App6
+                    end
+                end
+            end
+        end
+    end
 ```
 
-Editar configurações do banco de dados no arquivo `/etc/mysql/conf.d/cloudstack.cnf`:
+Para o processamento em nuvem do **LabQS** iremos definir:
 
-```sh
-vi /etc/mysql/conf.d/cloudstack.cnf
-```
+* **Zonas** - zonas de processamento, que a princípio será uma única, disponível no IEC, mas preparada para expansão em outros centros de processamento em diferentes prédios;
+* **Pods** - um _rack_ compreendendo um _switch_ e servidores que formarão um ou mais _clusters_;
+* **Cluster** - grupos de um ou mais servidores e armazenamento primário;
+* **Host** - um único servidor dentro de um cluster executando um hipervisor;
+* **Armazenamento primário** - recurso de armazenamento definido para um único _cluster_;
+* **Armazenamento secundário** - recurso de armazenamento geral da **Zona** usado para armazenamento de _templates_, imagens de sistemas operacionais, cópias de servidores, etc.
 
-```ini
-[mysqld]
-server-id=1
-sql-mode="STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION,ERROR_FOR_DIVISION_BY_ZERO,NO_ZERO_DATE,NO_ZERO_IN_DATE,NO_ENGINE_SUBSTITUTION"
-innodb_rollback_on_timeout=1
-innodb_lock_wait_timeout=600
-max_connections=1000
-log-bin=mysql-bin
-binlog-format = 'ROW'
-default-authentication-plugin=mysql_native_password
-```
+### Sobre **Regiões**
 
-Re-iniciar serviço de banco de dados:
+É possível agrupar várias **Zonas** em regiões, dando alta disponibilidade e escalabilidade, o que porém vai além dos objetivos do **LabQS**.
 
-```sh
-systemctl restart mysql.service
-```
+### **Zonas**
 
-Criar banco de dados:
+Uma zona contém:
 
-```sh
-cloudstack-setup-databases maint:'c0r0n@'@localhost --deploy-as=root -m 'c0r0n@' -k 'c0r0n@' -i 127.0.0.1
-```
+* Um ou mais _pods_, e cada _pod_ contendo um ou mais _clusters_ e um ou mais servidores de _armazenamento primário_;
+* Um ou mais servidores _armazenament primário_ da **Zona**;
+* _Armazenamento secundário_ compartilhado por todos os _pods_ da **Zona**.
 
-Iniciar os serviços do **cloudstack**:
+A **Zona** é visível pelo usuário, que quando inicia uma máquina virtual (VM) deve escolhar a **Zona** desejada. **Zonas** podem ser públicas (visíveis para todos usuários) ou privadas (reservadas para domínios específicos).
 
-```sh
-cloudstack-setup-management
-```
+**Hosts** na mesma zona podem ser acessados entre si sem passarem por um _firewall_. **Hosts** em **Zonas** diferentes somente podem ser acessados por meio de uma **VPN**.
 
-## Exportar portas
+Para cada **Zona** devemos decidir:
 
-No _host_ expor as seguintes portas:
+* Número de _pods_;
+* Número de _clusters_ em cada _pod_;
+* Número de _hosts_ em cada _cluster_;
+* Quantos servidores de _armazenamento primário_ para a **Zona** e a capacidade de cada servidor;
+* Quantos servidores de _armazenamento primário_ para cada _cluster_ e a capacidade de cada servidor;
+* Quanto de _armazenamento secundário_ alocado para a **Zona**.
 
-```sh
-sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 80 -j DNAT --to-destination 172.31.100.1:8080
-sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 443 -j DNAT --to-destination 172.31.100.1:8443
-sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 8250 -j DNAT --to-destination 172.31.100.1:8250
-sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 9090 -j DNAT --to-destination 172.31.100.1:9090
-sudo iptables-save | sudo tee /etc/iptables/rules.v4
-sudo ip6tables-save | sudo tee /etc/iptables/rules.v6
-```
+Ao criar uma **Zona** devemos configurar sua rede física, adicionar o primeiro _pod_, _cluster_, _host_, _armazenamento primário_ e _armazenamento secundário_.
 
-Opcional, expor a porta do serviço **MySQL**
+### _Pods_
 
-```sh
-sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 3306 -j DNAT --to-destination 172.31.100.1:3306
-```
+Um _pod_ é geralmente associado à um _rack_ e _hosts_ no mesmo _pod_ formam uma _subnet_. Um _pod_ consiste de um ou mais _clusters_ de _hosts_ e um ou mais servidores de _armazenamento primário_.
 
-## Login
+### _Clusters_
 
-Primeiro login no sistema:
+Um _cluster_ é um modo de agrupar _hosts_, consistindo de um ou mais _hosts_ e um ou mais servidores de _armazenamento primário_.
 
-![Primeiro login](./images/01-cloudstack-login.png)
+> Obs.: mesmo que seja utilizado armazenamento local e apenas um servidor, _clusters_ são organizacionalmente requisitos.
+
+### _Hosts_
+
+Cada servidor é um _host_, que provê recurso computacional para executar máquinas virtuais. Cada _host_ possui um hipervisor instalado (em nosso caso **Xen Project**), e proporcionam:
+
+* CPU, memória, armazenamento, rede e conexão com internet;
+* Interconexão usando rede TCP/IP de banda larga;
+* Pode ter diferentes capacidades e recursos (como GPUs), mas _hosts_ dentro de um _cluster_ devem ser homogêneos.
+
+_Hosts_ adicionais podem ser adicionados para prover mais capacidades para máquinas virtuais, e não são visíveis para os usuários finais.
+
+Para adicionar um _host_ é preciso:
+
+* Instalar um hipervisor;
+* Assinalr um endereço IP;
+* Garantir que esteja conectado ao servidor gerenciador.
+

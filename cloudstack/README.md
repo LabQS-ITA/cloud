@@ -131,3 +131,13 @@ Para adicionar um _host_ é preciso:
 * Assinalr um endereço IP;
 * Garantir que esteja conectado ao servidor gerenciador.
 
+### Redes
+
+As redes em uma **Zona** dão suporte à diversos tipos de tráfegos. Para cada tipo de tráfego temos intervalos de endereços IPs designados pelo gerenciamento da **Zona**.
+
+* **Cliente** - tráfego gerado pelas máquinas virtuais dos usuários;
+* **Gerenciamento** - tráfego gerado pela comunicação entre os recursos internos da **Zona**;
+* **Público** - tráfego gerado pelas máquinas virtuais ao se conectarem à internet - é utilizado _NAT_ entre a rede **Cliente** e a rede **Pública** para dar acesso via internet à máquina virtual;
+* **Armazenamento** - tráfego gerado pela comunicação com _armazenamento secundário_ - uma interface de rede separada é utilizada para este tráfego.
+
+

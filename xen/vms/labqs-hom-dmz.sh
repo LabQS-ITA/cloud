@@ -2,12 +2,12 @@
 set -euo pipefail
 
 sudo xen-create-image \
-    --hostname='c3.labqs.ita.br' \
-    --memory=4gb \
+    --hostname='labqs.ita.br' \
+    --memory=8gb \
     --vcpus=2 \
     --lvm=ubuntu-vg  \
-    --size=20Gb \
-    --ip=172.31.100.3 \
+    --size=200Gb \
+    --ip=172.31.100.1 \
     --netmask=172.31.0.0 \
     --broadcast=172.31.255.255 \
     --netmask=255.255.0.0 \
@@ -17,6 +17,6 @@ sudo xen-create-image \
     --bridge=xenbr0 \
     --role=labqs \
     --pygrub \
-    --dist=bullseye \
+    --dist=focal \
     --password='c0r0n@' \
     --verbose

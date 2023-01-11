@@ -7,14 +7,13 @@ sudo xen-create-image \
     --vcpus=2 \
     --lvm=ubuntu-vg  \
     --size=200Gb \
-    --ip=172.31.100.1 \
-    --netmask=172.31.0.0 \
-    --broadcast=172.31.255.255 \
-    --netmask=255.255.0.0 \
-    --gateway=172.31.0.1 \
+    --ip=161.24.23.136 \
+    --netmask=161.24.23.0 \
+    --broadcast=161.24.23.255 \
+    --netmask=255.255.255.0 \
+    --gateway=161.24.23.1 \
     --nameserver=161.24.23.180 \
     --randommac \
-    --bridge=xenbr0 \
     --role=labqs \
     --pygrub \
     --dist=focal \

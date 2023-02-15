@@ -1,3 +1,6 @@
 [submodule "lab"]
 	path = lab
 	url = https://github.com/LabQS-ITA/lab.git
+[submodule "labqs-env"]
+	path = labqs-env
+	url = https://gitlab.com/jm4rc05/labqs-env.git

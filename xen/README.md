@@ -267,6 +267,12 @@ sed -i 's/^#PasswordAuthentication\s.*$/PasswordAuthentication yes/' ${prefix}/e
 logMessage Script $0 finished
 ```
 
+### Tornar executável
+
+```sh
+sudo chmod +x /etc/xen-tools/role.d/labqs
+```
+
 <div style="page-break-after: always;"></div>
 
 ## Criar Máquinas Virtuais
@@ -433,20 +439,21 @@ sudo lvremove /dev/ubuntu-vg/c1.labqs.ita.br-disk --yes
 
 <div style="page-break-after: always;"></div>
 
-# TODO LabQS
+# LabQS
 
 ```mermaid
 journey
     title LabQS
     section Configurações
         Containers para serviços: 5: Me
-        Máquinas virtuais para ambientes: 5: Me
-        Divulgar disponibilidade: 3: Me
+        Máquinas virtuais para ambientes: 3: Me
+        Migrar ambientes: 1: Me
+        Divulgar disponibilidade: 1: Me
 ```
 
 <div style="page-break-after: always;"></div>
 
-# TODO Servidor IA-PLN
+# Servidor IA-PLN/Dev
 
 ```mermaid
 journey
@@ -454,7 +461,22 @@ journey
     section Servidor IA-PLN
         Especificar servidor: 5: Me
         Comprar servidor: 5: Marcos
-        Receber servidor: 3: Marcos
+        Receber servidor: 5: Marcos
+        Configurar servidor: 5: Me, Marcos
+        Configurar redes: 5: Me, Cássio
+        Testar servidor: 1: Me, Wesley, Aline
+        Divulgar disponibilidade: 1: Me
+```
+
+# Servidor IA-PLN/Ops
+
+```mermaid
+journey
+    title LabQS
+    section Servidor IA-PLN
+        Especificar servidor: 1: Me
+        Comprar servidor: 1: Marcos
+        Receber servidor: 1: Marcos
         Configurar servidor: 1: Me, Marcos
         Configurar redes: 1: Me, Cássio
         Testar servidor: 1: Me, Wesley, Aline
@@ -463,13 +485,28 @@ journey
 
 <div style="page-break-after: always;"></div>
 
-# TODO Servidor ES-TIH
+# Servidor ES-TIH/Storage
 
 ```mermaid
 journey
     title LabQS
     section Servidor ES-TIH
         Especificar servidor: 3: Me, Marcos
+        Comprar servidor: 1: Marcos
+        Receber servidor: 1: Marcos
+        Configurar servidor: 1: Me, Marcos
+        Configurar redes: 1: Me, Cássio
+        Testar servidor: 1: Me, Henrique
+        Divulgar disponibilidade: 1: Me
+```
+
+# Servidor ES-TIH/Processing
+
+```mermaid
+journey
+    title LabQS
+    section Servidor ES-TIH
+        Especificar servidor: 1: Me, Marcos
         Comprar servidor: 1: Marcos
         Receber servidor: 1: Marcos
         Configurar servidor: 1: Me, Marcos

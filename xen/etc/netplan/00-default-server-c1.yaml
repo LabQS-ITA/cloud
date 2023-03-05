@@ -6,6 +6,11 @@ network:
     enp2s0f0:
       addresses:
       - "161.24.23.103/24"
+      nameservers:
+        addresses:
+        - 161.24.23.199
+        - 161.24.23.180
+        search: []
       dhcp4: false
       dhcp6: false
       routes:

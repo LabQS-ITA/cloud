@@ -173,7 +173,7 @@ GRUB_CMDLINE_XEN_DEFAULT="dom0_mem=2048M,max=2048M"
 ```
 
 ```sh
-sudo update-grub
+sudo update-grub2
 sudo reboot
 ```
 
@@ -279,7 +279,7 @@ sudo chmod +x /etc/xen-tools/role.d/labqs
 
 ```sh
 sudo xen-create-image \
-	--hostname='c1.labqs.ita.br' \
+	--hostname='cloud01.labqs.ita.br' \
 	--memory=1gb \
 	--vcpus=2 \
 	--lvm=ubuntu-vg  \
@@ -305,14 +305,14 @@ sudo xen-create-image \
 Caso necessário é possível extender o volume alocado para a Máquina Virtual:
 
 ```sh
-sudo lvextend --size +1G /dev/ubuntu-vg/c1.labqs.ita.br-disk
+sudo lvextend --size +1G /dev/ubuntu-vg/cloud01.labqs.ita.br-disk
 ```
 
 
 ### Iniciar a Máquina Virtual
 
 ```sh
-sudo xl create /etc/xen/c1.labqs.ita.br.cfg
+sudo xl create /etc/xen/cloud01.labqs.ita.br.cfg
 ```
 
 ### Acessar a Máquina Virtual
@@ -328,7 +328,7 @@ ssh -p 2222 root@172.31.100.1
 ### Acessar a Máquina Virtual via console
 
 ```sh
-sudo xl console c1.labqs.ita.br
+sudo xl console cloud01.labqs.ita.br
 ```
 
 ### Acessar a máquina virtual externamente
@@ -417,25 +417,40 @@ A variável `$LAB_DOMAIN` é geralmente iniciada com o domínio registrado no **
 ### Recriar a Máquina Virtual
 
 ```sh
-sudo xl destroy c1.labqs.ita.br
-sudo xl create /etc/xen/c1.labqs.ita.br.cfg
+sudo xl destroy cloud01.labqs.ita.br
+sudo xl create /etc/xen/cloud01.labqs.ita.br.cfg
 ```
 
 ### Remover a Máquina Virtual
 
 ```sh
-sudo xl destroy c1.labqs.ita.br
-sudo rm /etc/xen/c1.labqs.ita.br.cfg
-sudo lvremove /dev/ubuntu-vg/c1.labqs.ita.br-swap --yes
-sudo lvremove /dev/ubuntu-vg/c1.labqs.ita.br-disk --yes
+sudo xl destroy cloud01.labqs.ita.br
+sudo rm /etc/xen/cloud01.labqs.ita.br.cfg
+sudo lvremove /dev/ubuntu-vg/cloud01.labqs.ita.br-swap --yes
+sudo lvremove /dev/ubuntu-vg/cloud01.labqs.ita.br-disk --yes
 ```
 
 Caso o volume acuse que está em uso basta remove-lo da lista do sistema operacional (um dos dois):
 
 ```sh
-sudo umount /dev/mapper/ubuntu--vg-c1.labqs.ita.br--disk
-sudo lvremove /dev/ubuntu-vg/c1.labqs.ita.br-disk --yes
+sudo umount /dev/mapper/ubuntu--vg-cloud01.labqs.ita.br--disk
+sudo lvremove /dev/ubuntu-vg/cloud01.labqs.ita.br-disk --yes
 ```
+
+## Remover Xen
+
+```sh
+sudo apt --yes --purge remove xen*
+```
+
+### Outros arquivos
+
+1. volumes criados pelas VMs
+1. remover arquivos `/etc/xen*`
+1. remover arquivos `/var/lib/xen*`
+1. remover configuração GRUB em `/etc/default/grub.d/xen.cfg` e executar `update-grub`
+
+
 
 <div style="page-break-after: always;"></div>
 

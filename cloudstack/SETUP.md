@@ -4,34 +4,74 @@
 
 ## Instalação
 
-Instalar CloudStack numa máquina virtual sob o hipervisor rodando **Ubuntu**:
+Criar uma máquina virtual:
 
 ```sh
-sudo xl create /etc/xen/cloud02.labqs.ita.br.cfg
-ssh -p 2222 root@172.31.100.2
+sudo xen-create-image \
+    --hostname='cloud01.labqs.ita.br' \
+    --memory=8gb \
+    --vcpus=2 \
+    --dir=/volumes \
+    --size=200Gb \
+    --ip=172.31.100.1 \
+    --broadcast=172.31.255.255 \
+    --netmask=255.255.0.0 \
+    --gateway=172.31.0.1 \
+    --nameserver=161.24.23.180 \
+    --randommac \
+    --bridge=xenbr0 \
+    --role=labqs \
+    --pygrub \
+    --dist=focal \
+    --password='c0r0n@' \
+    --verbose
+
+sudo xl create /etc/xen/cloud01.labqs.ita.br.cfg
 ```
 
-Obter versão mais recente:
+### Registrar auto-login:
 
 ```sh
-apt-get update && apt-get upgrade -y
-apt-get install -y wget gnupg curl openjdk-11-jdk mysql-server
-wget -O- http://download.cloudstack.org/release.asc | gpg --dearmor | sudo tee /etc/apt/keyrings/cloudstack.gpg > /dev/null
-echo deb [signed-by=/etc/apt/keyrings/cloudstack.gpg] http://download.cloudstack.org/ubuntu focal 4.17 > /etc/apt/sources.list.d/cloudstack.list
-apt-get update
+ssh -p 2222 root@172.31.100.1
+
+    mkdir -p ~/.ssh
+
+    exit
+
+cat ~/.ssh/id_ed25519.pub | ssh -p 2222 root@172.31.100.1 'cat >> .ssh/authorized_keys'
+```
+
+## Acessar a máquina virtual e instalar CloudStack
+
+```sh
+
+ssh -p 2222 root@172.31.100.1
+
+    apt-get update && apt-get upgrade -y
+
+    apt-get install -y wget gnupg curl openjdk-11-jdk mysql-server
+
+    mkdir -p /etc/apt/keyrings
+    
+    wget -O- http://download.cloudstack.org/release.asc | gpg --dearmor | sudo tee /etc/apt/keyrings/cloudstack.gpg > /dev/null
+
+    echo deb [signed-by=/etc/apt/keyrings/cloudstack.gpg] http://download.cloudstack.org/ubuntu focal 4.17 > /etc/apt/sources.list.d/cloudstack.list
+    
+    apt-get update
 ```
 
 Instalar o servidor de gerenciamento
 
 ```sh
-apt-get install -y cloudstack-management cloudstack-agent cloudstack-usage
-systemctl stop cloudstack-agent.service cloudstack-management.service cloudstack-usage.service
+    apt-get install -y cloudstack-management cloudstack-agent cloudstack-usage
+
+    systemctl stop cloudstack-agent.service cloudstack-management.service cloudstack-usage.service
 ```
 
 Editar configurações do banco de dados no arquivo `/etc/mysql/conf.d/cloudstack.cnf`:
 
 ```sh
-vi /etc/mysql/conf.d/cloudstack.cnf
+    vi /etc/mysql/conf.d/cloudstack.cnf
 ```
 
 ```ini
@@ -49,16 +89,18 @@ default-authentication-plugin=mysql_native_password
 Re-iniciar serviço de banco de dados:
 
 ```sh
-systemctl restart mysql.service
+    systemctl restart mysql.service
 ```
 
 Criar banco de dados:
 
 ```sh
-cloudstack-setup-databases maint:'c0r0n@'@localhost --deploy-as=root -m 'c0r0n@' -k 'c0r0n@' -i 127.0.0.1
+    cloudstack-setup-databases maint:'c0r0n@'@localhost --deploy-as=root -m 'c0r0n@' -k 'c0r0n@' -i 127.0.0.1
 ```
 
-Configurar rede (verificar nome/IP da interface)
+## Rede
+
+Configurar rede (verificar nome/IP da interface) em `/etc/netplan/01-netcfg.yaml`
 
 ```yaml
 network:
@@ -72,7 +114,7 @@ network:
 
   bridges:
     cloudbr0:
-      addresses: [172.31.100.2/16]
+      addresses: [172.31.100.1/16]
       dhcp4: false
       dhcp6: false
       interfaces:
@@ -81,23 +123,25 @@ network:
       - to: "default"
         via: "172.31.0.1"
       nameservers:
-          addresses: [161.24.23.180]
+        addresses: [161.24.23.180]
       parameters:
         stp: false
         forward-delay: 0
 ```
 
 ```sh
-netplan generate
-netplan apply
-reboot
+    netplan generate
+
+    netplan apply
+
+    reboot
 ```
 
 
 Iniciar os serviços do **cloudstack**:
 
 ```sh
-cloudstack-setup-management
+    cloudstack-setup-management
 ```
 
 ## Exportar portas
@@ -105,18 +149,23 @@ cloudstack-setup-management
 No _host_ expor as seguintes portas:
 
 ```sh
-sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 80 -j DNAT --to-destination 172.31.100.2:8080
-sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 443 -j DNAT --to-destination 172.31.100.2:8443
-sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 8250 -j DNAT --to-destination 172.31.100.2:8250
-sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 9090 -j DNAT --to-destination 172.31.100.2:9090
+sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 80 -j DNAT --to-destination 172.31.100.1:8080
+
+sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 443 -j DNAT --to-destination 172.31.100.1:8443
+
+sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 8250 -j DNAT --to-destination 172.31.100.1:8250
+
+sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 9090 -j DNAT --to-destination 172.31.100.1:9090
+
 sudo iptables-save | sudo tee /etc/iptables/rules.v4
+
 sudo ip6tables-save | sudo tee /etc/iptables/rules.v6
 ```
 
 Opcional, expor a porta do serviço **MySQL**
 
 ```sh
-sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 3306 -j DNAT --to-destination 172.31.100.2:3306
+sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 3306 -j DNAT --to-destination 172.31.100.1:3306
 ```
 
 ## Login
@@ -124,3 +173,14 @@ sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 3306 -j DNA
 Primeiro login no sistema (_usuário_: *admin*, _senha_: *password*)
 
 ![Primeiro login](./images/01-cloudstack-login.png)
+
+
+## Destruir experimento
+
+```sh
+sudo xl destroy cloud01.labqs.ita.br
+
+sudo rm /etc/xen/cloud01.labqs.ita.br.cfg
+
+sudo rm -rf /volumes/domains/cloud01.labqs.ita.br
+````

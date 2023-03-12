@@ -5,7 +5,7 @@ sudo xen-create-image \
     --hostname='cloud01.labqs.ita.br' \
     --memory=8gb \
     --vcpus=2 \
-    --dir=/volumes/cloud01.labqs.ita.br \
+    --dir=/volumes \
     --size=200Gb \
     --ip=172.31.100.1 \
     --broadcast=172.31.255.255 \

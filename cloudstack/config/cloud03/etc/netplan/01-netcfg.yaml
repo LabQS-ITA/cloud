@@ -1,0 +1,29 @@
+network:
+  version: 2
+  renderer: networkd
+
+  ethernets:
+    eth0:
+      addresses: [172.31.100.3/16]
+      gateway4: 172.31.0.1
+      nameservers:
+          addresses: [161.24.23.180,161.24.23.199]
+
+  bridges:
+    cloudbr0:
+      addresses:
+      - "192.168.0.0/16"
+      interfaces:
+      - eth0
+      dhcp4: false
+      dhcp6: false
+      routes:
+      - to: "0.0.0.0/0"
+        via: "172.31.0.1"
+      nameservers:
+        addresses:
+        - "161.24.23.199"
+        - "161.24.23.180"
+      parameters:
+        stp: false
+        forward-delay: 0

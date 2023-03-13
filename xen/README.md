@@ -210,7 +210,7 @@ sudo ip6tables-save | sudo tee /etc/iptables/rules.v6
 ```
 
 
- #### Excluir regras (caso deseje reverter)
+### Excluir regras (caso deseje reverter)
 
 Listar a regra
 

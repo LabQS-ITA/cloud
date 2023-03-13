@@ -3,10 +3,10 @@ set -euo pipefail
 
 sudo xen-create-image \
     --hostname='cloud01.labqs.ita.br' \
-    --memory=8gb \
+    --memory=2Bb \
     --vcpus=2 \
     --dir=/volumes \
-    --size=200Gb \
+    --size=100Gb \
     --ip=172.31.100.1 \
     --broadcast=172.31.255.255 \
     --netmask=255.255.0.0 \

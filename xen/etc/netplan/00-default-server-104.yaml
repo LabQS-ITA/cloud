@@ -5,7 +5,7 @@ network:
   ethernets:
     enp2s0f0:
       addresses:
-      - "161.24.23.103/24"
+      - "161.24.23.104/24"
       nameservers:
         addresses:
         - 161.24.23.199
@@ -27,6 +27,7 @@ network:
     enp2s0f1:
       dhcp4: false
       dhcp6: false
+      optional: true
 
   bridges:
     xenbr0:

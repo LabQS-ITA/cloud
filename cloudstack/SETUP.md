@@ -4,15 +4,51 @@
 
 ## Instalação
 
-Criar uma máquina virtual:
+Definir configuração do serviço SSH nas máquinas virtuais (arquivo `/etc/xen-tools/role.d/labqs`)
+
+```yaml
+#!/bin/sh
+#
+#  This role install docker
+#
+
+prefix=$1
+
+#
+#  Source our common functions - this will let us install a Debian package.
+#
+if [ -e /usr/share/xen-tools/common.sh ]; then
+    . /usr/share/xen-tools/common.sh
+else
+    echo "Installation problem"
+fi
+
+#
+# Log our start
+#
+logMessage Script $0 starting
+
+#
+# Enable SSH root access using password
+#
+sed -i 's/^#PermitRootLogin\s.*$/PermitRootLogin yes/' ${prefix}/etc/ssh/sshd_config
+sed -i 's/^#PasswordAuthentication\s.*$/PasswordAuthentication yes/' ${prefix}/etc/ssh/sshd_config
+
+#
+#  Log our finish
+#
+logMessage Script $0 finished
+```
+
+Criar máquinas virtuais:
 
 ```sh
 sudo xen-create-image \
     --hostname='cloud01.labqs.ita.br' \
-    --memory=8gb \
+    --memory=2Gb \
     --vcpus=2 \
     --dir=/volumes \
-    --size=200Gb \
+    --size=100Gb \
     --ip=172.31.100.1 \
     --broadcast=172.31.255.255 \
     --netmask=255.255.0.0 \
@@ -26,30 +62,123 @@ sudo xen-create-image \
     --password='c0r0n@' \
     --verbose
 
+sudo xen-create-image \
+    --hostname='cloud02.labqs.ita.br' \
+    --memory=8Gb \
+    --vcpus=2 \
+    --dir=/volumes \
+    --size=200Gb \
+    --ip=172.31.100.2 \
+    --broadcast=172.31.255.255 \
+    --netmask=255.255.0.0 \
+    --gateway=172.31.0.1 \
+    --nameserver=161.24.23.180 \
+    --randommac \
+    --bridge=xenbr0 \
+    --role=labqs \
+    --pygrub \
+    --dist=focal \
+    --password='c0r0n@' \
+    --verbose
+
+sudo xen-create-image \
+    --hostname='cloud03.labqs.ita.br' \
+    --memory=8Gb \
+    --vcpus=2 \
+    --dir=/volumes \
+    --size=200Gb \
+    --ip=172.31.100.3 \
+    --broadcast=172.31.255.255 \
+    --netmask=255.255.0.0 \
+    --gateway=172.31.0.1 \
+    --nameserver=161.24.23.180 \
+    --randommac \
+    --bridge=xenbr0 \
+    --role=labqs \
+    --pygrub \
+    --dist=focal \
+    --password='c0r0n@' \
+    --verbose
+
 sudo xl create /etc/xen/cloud01.labqs.ita.br.cfg
+
+sudo xl create /etc/xen/cloud02.labqs.ita.br.cfg
+
+sudo xl create /etc/xen/cloud03.labqs.ita.br.cfg
 ```
 
 ### Registrar auto-login:
 
 ```sh
-ssh -p 2222 root@172.31.100.1
+ssh root@172.31.100.1 'mkdir -p ~/.ssh'
+cat ~/.ssh/id_ed25519.pub | ssh root@172.31.100.1 'cat > .ssh/authorized_keys'
 
-    mkdir -p ~/.ssh
+ssh root@172.31.100.2 'mkdir -p ~/.ssh'
+cat ~/.ssh/id_ed25519.pub | ssh root@172.31.100.2 'cat > .ssh/authorized_keys'
 
-    exit
+ssh root@172.31.100.3 'mkdir -p ~/.ssh'
+cat ~/.ssh/id_ed25519.pub | ssh root@172.31.100.3 'cat > .ssh/authorized_keys'
+```
 
-cat ~/.ssh/id_ed25519.pub | ssh -p 2222 root@172.31.100.1 'cat >> .ssh/authorized_keys'
+```sh
 ```
 
 ## Acessar a máquina virtual e instalar CloudStack
 
+### Configurar rede
+
+Configurar rede (verificar nome/IP da interface) em `/etc/netplan/01-netcfg.yaml`) e repetir para os servidores de armazenamento
+
+```yaml
+network:
+  version: 2
+  renderer: networkd
+
+  ethernets:
+    eth0:
+      dhcp4: false
+      dhcp6: false
+      optional: true
+
+  bridges:
+    cloudbr0:
+      addresses:
+      - "172.31.100.1/16"
+      interfaces:
+      - eth0
+      dhcp4: false
+      dhcp6: false
+      routes:
+      - to: default
+        via: 172.31.0.1
+      nameservers:
+        addresses:
+        - 161.24.23.199
+        - 161.24.23.180
+      parameters:
+        stp: false
+        forward-delay: 0
+```
+
+```sh
+    netplan generate
+
+    netplan apply
+
+    reboot
+```
+
+Repetir para `172.31.100.2` e `172.31.100.3` com os respectivos IPs.
+
+### Servidor de gerenciamento
+
 ```sh
 
-ssh -p 2222 root@172.31.100.1
+ssh root@172.31.100.1
 
     apt-get update && apt-get upgrade -y
 
-    apt-get install -y wget gnupg curl openjdk-11-jdk mysql-server
+    apt-get install -y wget gnupg curl openjdk-11-jdk mysql-server nfs-kernel-server quota
 
     mkdir -p /etc/apt/keyrings
     
@@ -60,15 +189,17 @@ ssh -p 2222 root@172.31.100.1
     apt-get update
 ```
 
-Instalar o servidor de gerenciamento
+Gerar chaves para acessar as demais máquinas virtuais a partir do servidor de gerenciamento:
 
 ```sh
-    apt-get install -y cloudstack-management cloudstack-agent cloudstack-usage
+    ssh-keygen -t ed25519 -C 'labqs@ita.br'
 
-    systemctl stop cloudstack-agent.service cloudstack-management.service cloudstack-usage.service
+    cat ~/.ssh/id_ed25519.pub | ssh root@172.31.100.2 'cat >> .ssh/authorized_keys'
+
+    cat ~/.ssh/id_ed25519.pub | ssh root@172.31.100.3 'cat >> .ssh/authorized_keys'
 ```
 
-Editar configurações do banco de dados no arquivo `/etc/mysql/conf.d/cloudstack.cnf`:
+Editar configurações do banco de dados no arquivo `/etc/mysql/conf.d/cloudstack.cnf` para o servidor de gerenciamento
 
 ```sh
     vi /etc/mysql/conf.d/cloudstack.cnf
@@ -98,45 +229,28 @@ Criar banco de dados:
     cloudstack-setup-databases maint:'c0r0n@'@localhost --deploy-as=root -m 'c0r0n@' -k 'c0r0n@' -i 127.0.0.1
 ```
 
-## Rede
+Configurar agente:
 
-Configurar rede (verificar nome/IP da interface) em `/etc/netplan/01-netcfg.yaml`
-
-```yaml
-network:
-  version: 2
-  renderer: networkd
-
-  ethernets:
-    eth0:
-      dhcp4: false
-      dhcp6: false
-
-  bridges:
-    cloudbr0:
-      addresses: [172.31.100.1/16]
-      dhcp4: false
-      dhcp6: false
-      interfaces:
-      - eth0
-      routes:
-      - to: "default"
-        via: "172.31.0.1"
-      nameservers:
-        addresses: [161.24.23.180]
-      parameters:
-        stp: false
-        forward-delay: 0
-```
 
 ```sh
-    netplan generate
+touch /etc/cloudstack/agent/cloud.jks
 
-    netplan apply
-
-    reboot
+touch /etc/cloudstack/agent/uefi.properties
 ```
 
+Gerar **UUID** (usar `uuidgen` para obter uma chave):
+
+> Ou esperar a **UUID** gerada durante a iniciação dos serviços **cloudstack** mais abaixo
+
+```sh
+vi /etc/cloudstack/agent/agent.properties
+```
+
+```ini
+. . .
+uuid=
+. . .
+```
 
 Iniciar os serviços do **cloudstack**:
 
@@ -144,7 +258,58 @@ Iniciar os serviços do **cloudstack**:
     cloudstack-setup-management
 ```
 
-## Exportar portas
+#### Servidores de armazenamento e execução
+
+Instalar os servidores de armazenamento (`172.31.100.2` e `172.31.100.1`)
+
+```sh
+ssh root@172.31.100.1
+
+    apt-get update && apt-get upgrade -y
+
+    apt-get install -y wget gnupg curl openjdk-11-jdk nfs-kernel-server quota
+
+    mkdir -p /etc/apt/keyrings
+    
+    wget -O- http://download.cloudstack.org/release.asc | gpg --dearmor | sudo tee /etc/apt/keyrings/cloudstack.gpg > /dev/null
+
+    echo deb [signed-by=/etc/apt/keyrings/cloudstack.gpg] http://download.cloudstack.org/ubuntu focal 4.17 > /etc/apt/sources.list.d/cloudstack.list
+
+    apt-get update
+```
+
+Instalar os servidores de trabalho
+
+```sh
+    apt-get install -y cloudstack-agent
+
+    systemctl stop cloudstack-agent.service
+
+    touch /etc/cloudstack/agent/cloud.jks
+
+    touch /etc/cloudstack/agent/uefi.properties
+```
+
+Configurar armazenamento (`172.31.100.2` e `172.31.100.3`)
+
+```sh
+    mkdir -p /export/primary /export/secondary
+
+    exportfs -a
+
+    sed -i -e 's/^RPCMOUNTDOPTS="--manage-gids"$/RPCMOUNTDOPTS="-p 892 --manage-gids"/g' /etc/default/nfs-kernel-server
+
+    sed -i -e 's/^STATDOPTS=$/STATDOPTS="--port 662 --outgoing-port 2020"/g' /etc/default/nfs-common
+
+    echo "NEED_STATD=yes" >> /etc/default/nfs-common
+
+    sed -i -e 's/^RPCRQUOTADOPTS=$/RPCRQUOTADOPTS="-p 875"/g' /etc/default/quota
+
+    service nfs-kernel-server restart
+```
+
+
+## Exportar portas do servidor de gerenciamento
 
 No _host_ expor as seguintes portas:
 
@@ -168,19 +333,56 @@ Opcional, expor a porta do serviço **MySQL**
 sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 3306 -j DNAT --to-destination 172.31.100.1:3306
 ```
 
+
 ## Login
 
 Primeiro login no sistema (_usuário_: *admin*, _senha_: *password*)
 
 ![Primeiro login](./images/01-cloudstack-login.png)
 
+## Se for necessário acessar o console da máquina virtual
+
+```sh
+sudo xl console cloud01.labqs.ita.br
+```
 
 ## Destruir experimento
+
+### Excluir máquina virtual
 
 ```sh
 sudo xl destroy cloud01.labqs.ita.br
 
+sudo xl destroy cloud02.labqs.ita.br
+
+sudo xl destroy cloud03.labqs.ita.br
+
 sudo rm /etc/xen/cloud01.labqs.ita.br.cfg
 
+sudo rm /etc/xen/cloud02.labqs.ita.br.cfg
+
+sudo rm /etc/xen/cloud03.labqs.ita.br.cfg
+
 sudo rm -rf /volumes/domains/cloud01.labqs.ita.br
-````
+
+sudo rm -rf /volumes/domains/cloud02.labqs.ita.br
+
+sudo rm -rf /volumes/domains/cloud03.labqs.ita.br
+```
+
+### Desfazer as rotas
+
+Listar as rotas:
+
+```sh
+sudo iptables -L -t nat --line-numbers
+```
+
+Apagar cada uma pelo número da linha (*obs*.: _ao excluir as rotas são renomeradas, então começar de trás para frente_):
+
+```sh
+sudo iptables -t nat -D PREROUTING 4
+sudo iptables -t nat -D PREROUTING 3
+sudo iptables -t nat -D PREROUTING 2
+sudo iptables -t nat -D PREROUTING 1
+```

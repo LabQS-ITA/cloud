@@ -3,7 +3,7 @@ set -euo pipefail
 
 sudo xen-create-image \
     --hostname='dev.labqs.ita.br' \
-    --memory=4gb \
+    --memory=4Gb \
     --vcpus=2 \
     --lvm=ubuntu-vg  \
     --size=100Gb \

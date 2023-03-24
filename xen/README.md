@@ -131,7 +131,7 @@ No arquivo `/etc/hosts`, eliminar linha
 ### Atualizar sistema
 
 ```sh
-sudo apt update -y && apt upgrade -y
+sudo apt update && sudo apt upgrade -y
 ```
 
 <div style="page-break-after: always;"></div>

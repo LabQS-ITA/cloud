@@ -37,6 +37,7 @@ network:
       dhcp6: false
       interfaces:
       - enp2s0f1
+      optional: true
       routes:
       - to: "default"
         via: "172.31.0.1"

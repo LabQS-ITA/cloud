@@ -529,3 +529,12 @@ journey
         Testar servidor: 1: Me, Henrique
         Divulgar disponibilidade: 1: Me
 ```
+
+# Desinstalar o Hypervisor
+
+```sh
+sudo apt remove xen*
+sudo apt remove qemu*
+sudo mv /etc/default/grup.d/xen.cfg /etc/default/grup.d/xen.cfg_old
+sudo reboot
+```

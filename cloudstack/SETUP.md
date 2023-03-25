@@ -187,6 +187,8 @@ ssh root@172.31.100.1
     echo deb [signed-by=/etc/apt/keyrings/cloudstack.gpg] http://download.cloudstack.org/ubuntu focal 4.17 > /etc/apt/sources.list.d/cloudstack.list
     
     apt-get update
+
+    apt-get install --yes cloudstack-management
 ```
 
 Gerar chaves para acessar as demais máquinas virtuais a partir do servidor de gerenciamento:
@@ -229,6 +231,21 @@ Criar banco de dados:
     cloudstack-setup-databases maint:'c0r0n@'@localhost --deploy-as=root -m 'c0r0n@' -k 'c0r0n@' -i 127.0.0.1
 ```
 
+Atualizar nome do `host``
+
+```sh
+vi /etc/hosts
+
+    127.0.0.1    localhost localhost.localdomain localhost4 localhost4.localdomain4
+    172.31.100.1 cloud01.labqs.ita.br cloud01
+
+vi /etc/hostname
+
+    cloud01
+
+systemctl restart systemd-networkd
+```
+
 Configurar agente:
 
 
@@ -252,20 +269,24 @@ uuid=
 . . .
 ```
 
-Iniciar os serviços do **cloudstack**:
+Iniciar os serviços do **cloudstack** e inspecionar os _logs_ para verificar quando o serviço terminar de configurar o banco de dados:
 
 ```sh
-    cloudstack-setup-management
+cloudstack-setup-management
+
+tail -f /var/log/cloudstack/management/management-server.log
 ```
 
 #### Servidores de armazenamento e execução
 
-Instalar os servidores de armazenamento (`172.31.100.2` e `172.31.100.1`)
+Instalar os servidores de armazenamento (`172.31.100.2` e `172.31.100.3`)
 
 ```sh
 ssh root@172.31.100.1
 
     apt-get update && apt-get upgrade -y
+
+    reboot
 
     apt-get install -y wget gnupg curl openjdk-11-jdk nfs-kernel-server quota
 
@@ -278,7 +299,7 @@ ssh root@172.31.100.1
     apt-get update
 ```
 
-Instalar os servidores de trabalho
+Instalar os servidores de trabalho (`172.31.100.2` e `172.31.100.3`)
 
 ```sh
     apt-get install -y cloudstack-agent
@@ -288,9 +309,11 @@ Instalar os servidores de trabalho
     touch /etc/cloudstack/agent/cloud.jks
 
     touch /etc/cloudstack/agent/uefi.properties
+
+    systemctl start cloudstack-agent.service
 ```
 
-Configurar armazenamento (`172.31.100.2` e `172.31.100.3`)
+Configurar armazenamento (`172.31.100.2`)
 
 ```sh
     mkdir -p /export/primary /export/secondary
@@ -305,7 +328,7 @@ Configurar armazenamento (`172.31.100.2` e `172.31.100.3`)
 
     sed -i -e 's/^RPCRQUOTADOPTS=$/RPCRQUOTADOPTS="-p 875"/g' /etc/default/quota
 
-    service nfs-kernel-server restart
+    systemctl restart nfs-kernel-server
 ```
 
 

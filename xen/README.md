@@ -533,8 +533,8 @@ journey
 # Desinstalar o Hypervisor
 
 ```sh
-sudo apt remove xen*
-sudo apt remove qemu*
+sudo apt remove --yes xen*
+sudo apt remove --yes qemu*
 sudo mv /etc/default/grup.d/xen.cfg /etc/default/grup.d/xen.cfg_old
 sudo reboot
 ```

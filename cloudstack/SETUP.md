@@ -9,7 +9,7 @@ Definir configuração do serviço SSH nas máquinas virtuais (arquivo `/etc/xen
 ```yaml
 #!/bin/sh
 #
-#  This role install docker
+#  This role setup SSH
 #
 
 prefix=$1
@@ -118,6 +118,9 @@ cat ~/.ssh/id_ed25519.pub | ssh root@172.31.100.2 'cat > .ssh/authorized_keys'
 
 ssh root@172.31.100.3 'mkdir -p ~/.ssh'
 cat ~/.ssh/id_ed25519.pub | ssh root@172.31.100.3 'cat > .ssh/authorized_keys'
+
+ssh root@172.31.100.4 'mkdir -p ~/.ssh'
+cat ~/.ssh/id_ed25519.pub | ssh root@172.31.100.4 'cat > .ssh/authorized_keys'
 ```
 
 ```sh

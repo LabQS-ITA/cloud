@@ -118,9 +118,6 @@ cat ~/.ssh/id_ed25519.pub | ssh root@172.31.100.2 'cat > .ssh/authorized_keys'
 
 ssh root@172.31.100.3 'mkdir -p ~/.ssh'
 cat ~/.ssh/id_ed25519.pub | ssh root@172.31.100.3 'cat > .ssh/authorized_keys'
-
-ssh root@172.31.100.4 'mkdir -p ~/.ssh'
-cat ~/.ssh/id_ed25519.pub | ssh root@172.31.100.4 'cat > .ssh/authorized_keys'
 ```
 
 ```sh
@@ -181,7 +178,9 @@ ssh root@172.31.100.1
 
     apt-get update && apt-get upgrade -y
 
-    apt-get install -y wget gnupg curl openjdk-11-jdk mysql-server nfs-kernel-server quota
+    apt-get install -y chrony wget gnupg curl openjdk-11-jdk mysql-server nfs-kernel-server quota
+
+    timedatectl set-timezone America/Sao_Paulo
 
     mkdir -p /etc/apt/keyrings
     
@@ -198,6 +197,8 @@ Gerar chaves para acessar as demais máquinas virtuais a partir do servidor de g
 
 ```sh
     ssh-keygen -t ed25519 -C 'labqs@ita.br'
+
+    cat ~/.ssh/id_ed25519.pub | ssh root@172.31.100.1 'cat >> .ssh/authorized_keys'
 
     cat ~/.ssh/id_ed25519.pub | ssh root@172.31.100.2 'cat >> .ssh/authorized_keys'
 
@@ -338,6 +339,25 @@ Configurar armazenamento (`172.31.100.2`)
 ## Exportar portas do servidor de gerenciamento
 
 No _host_ expor as seguintes portas:
+
+
+# Configurar host KVM após instalar Agent CloudStack
+
+## Mapear porta SSH
+
+sudo iptables -t nat -A PREROUTING -i enp6s0 -p tcp -m tcp --dport 22 -j DNAT --to-destination 161.24.23.95:2222
+
+## Liberar SSH usuário root
+
+Arquivo `/etc/ssh/sshd_config`
+
+PermitRootLogin yes
+
+## Senha para usuário root
+
+sudo usermod --password $(echo s3cr37 | openssl passwd -1 -stdin) 
+
+
 
 ```sh
 sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 80 -j DNAT --to-destination 172.31.100.1:8080

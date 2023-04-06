@@ -339,9 +339,26 @@ No primeiro caso (_acesso às portas **80** e **443** de uma aplicação interne
 
 #### Exemplo de roteamento de porta autorizada para a **DMZ**
 
+
+sudo iptables -t nat -A PREROUTING -i ens160 -p tcp -m tcp --dport 22 -j DNAT --to-destination 161.24.23.94:2222
+
 ```sh
-sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 80 -j DNAT --to-destination 172.31.100.1:80
-sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 443 -j DNAT --to-destination 172.31.100.1:443
+sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 80 -j DNAT --to-destination 172.31.100.1:8080
+
+sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p udp -m udp --dport 111 -j DNAT --to-destination 172.31.100.1:111
+sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 111 -j DNAT --to-destination 172.31.100.1:111
+sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 2049 -j DNAT --to-destination 172.31.100.1:2049
+sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 32803 -j DNAT --to-destination 172.31.100.1:32803
+sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p udp -m udp --dport 32769 -j DNAT --to-destination 172.31.100.1:32769
+sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 892 -j DNAT --to-destination 172.31.100.2:892
+sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 875 -j DNAT --to-destination 172.31.100.2:875
+sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 662 -j DNAT --to-destination 172.31.100.2:662
+sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 8250 -j DNAT --to-destination 172.31.100.1:8250
+
+sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 9090 -j DNAT --to-destination 172.31.100.1:9090
+sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 16514 -j DNAT --to-destination 172.31.100.1:16514
+
+
 sudo iptables-save | sudo tee /etc/iptables/rules.v4
 sudo ip6tables-save | sudo tee /etc/iptables/rules.v6
 ```

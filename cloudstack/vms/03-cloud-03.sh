@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-sudo xen-create-image \
+nohup sudo xen-create-image \
     --hostname='cloud03.labqs.ita.br' \
     --memory=8Gb \
     --vcpus=2 \
@@ -18,4 +18,4 @@ sudo xen-create-image \
     --pygrub \
     --dist=focal \
     --password='c0r0n@' \
-    --verbose
+    --verbose &

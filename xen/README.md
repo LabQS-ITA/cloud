@@ -275,11 +275,27 @@ sudo chmod +x /etc/xen-tools/role.d/labqs
 
 <div style="page-break-after: always;"></div>
 
+
+## Configurar `xen-tools` para instalar Ubuntu 20.04
+
+Editar `/etc/xen-tools/distributions.conf` e adicionar a linha abaixo logo após `bionic`
+
+```ini
+focal        = ubuntu     pygrub
+```
+
+Criar link para configurar a distribuição
+
+```sh
+cd /usr/share/xen-tools
+ln -s artful.d focal.d
+```
+
 ## Criar Máquinas Virtuais
 
 ```sh
 sudo xen-create-image \
-	--hostname='cloud01.labqs.ita.br' \
+	--hostname='gpes.ita.br' \
 	--memory=1gb \
 	--vcpus=2 \
 	--lvm=ubuntu-vg  \
@@ -299,20 +315,10 @@ sudo xen-create-image \
     --verbose
 ```
 
-
-### Extender o volume lógico
-
-Caso necessário é possível extender o volume alocado para a Máquina Virtual:
-
-```sh
-sudo lvextend --size +1G /dev/ubuntu-vg/cloud01.labqs.ita.br-disk
-```
-
-
 ### Iniciar a Máquina Virtual
 
 ```sh
-sudo xl create /etc/xen/cloud01.labqs.ita.br.cfg
+sudo xl create /etc/xen/gpes.ita.br.cfg
 ```
 
 ### Acessar a Máquina Virtual
@@ -441,17 +447,17 @@ sudo xl create /etc/xen/cloud01.labqs.ita.br.cfg
 ### Remover a Máquina Virtual
 
 ```sh
-sudo xl destroy cloud01.labqs.ita.br
-sudo rm /etc/xen/cloud01.labqs.ita.br.cfg
-sudo lvremove /dev/ubuntu-vg/cloud01.labqs.ita.br-swap --yes
-sudo lvremove /dev/ubuntu-vg/cloud01.labqs.ita.br-disk --yes
+sudo xl destroy gpes.ita.br
+sudo rm /etc/xen/gpes.ita.br.cfg
+sudo lvremove /dev/ubuntu-vg/gpes.ita.br-swap --yes
+sudo lvremove /dev/ubuntu-vg/gpes.ita.br-disk --yes
 ```
 
 Caso o volume acuse que está em uso basta remove-lo da lista do sistema operacional (um dos dois):
 
 ```sh
-sudo umount /dev/mapper/ubuntu--vg-cloud01.labqs.ita.br--disk
-sudo lvremove /dev/ubuntu-vg/cloud01.labqs.ita.br-disk --yes
+sudo umount /dev/mapper/labqsvg-gpes.ita.br--disk
+sudo lvremove /dev/labqsvg/gpes.ita.br-disk --yes
 ```
 
 ## Remover Xen
@@ -496,8 +502,8 @@ journey
         Receber servidor: 5: Marcos
         Configurar servidor: 5: Me, Marcos
         Configurar redes: 5: Me, Cássio
-        Testar servidor: 1: Me, Wesley, Aline
-        Divulgar disponibilidade: 1: Me
+        Testar servidor: 5: Me, Wesley, Aline
+        Divulgar disponibilidade: 5: Me
 ```
 
 # Servidor IA-PLN/Ops
@@ -506,7 +512,7 @@ journey
 journey
     title LabQS
     section Servidor IA-PLN
-        Especificar servidor: 1: Me
+        Especificar servidor: 3: Me
         Comprar servidor: 1: Marcos
         Receber servidor: 1: Marcos
         Configurar servidor: 1: Me, Marcos

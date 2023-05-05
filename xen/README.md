@@ -328,6 +328,14 @@ No primeiro caso (_acesso às portas **80** e **443** de uma aplicação interne
 
 #### Exemplo de roteamento de porta autorizada para a **DMZ**
 
+Antes instalar `iptables-persistent` para reter as configurações:
+
+```sh
+sudo apt install -y iptables-persistent
+```
+
+Criar as regras
+
 ```sh
 sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 60001 -j DNAT --to-destination 172.31.100.1:2222
 
@@ -340,7 +348,7 @@ sudo iptables-save | sudo tee /etc/iptables/rules.v4
 Reservar as portas `60000 ~ 60099` pelo sistema operacional
 
 ```sh
-sysctl -w net.ipv4.ip_local_reserved_ports = 60000, 60099
+sudo sysctl -w net.ipv4.ip_local_reserved_ports=60000,60099
 ```
 
 Outro caso é o de mapear dois serviços distintos que utilizam a mesma porta em máquinas virtuais diferentes. Vamos supor que temos dois serviços **Postgres** instalados em duas máquinas virtuais diferentes, e ambos utilizam a mesma porta **5400**. O primeiro poderá usar a porta **5400** do _host_, porém o segundo deverá usar uma porta diferente.

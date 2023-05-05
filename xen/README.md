@@ -206,24 +206,6 @@ Adicionar *NAT* _forwarding_ evitando que **systemd-resolved** entre em conflito
 ```sh
 sudo iptables ! -o lo -t nat -A POSTROUTING -j MASQUERADE
 sudo iptables-save | sudo tee /etc/iptables/rules.v4
-sudo ip6tables-save | sudo tee /etc/iptables/rules.v6
-```
-
-
-### Excluir regras (caso deseje reverter)
-
-Listar a regra
-
- ```sh
- sudo iptables -L -t nat --line-numbers
- ```
-
-Excluir pelo número da linha
-
-```sh
-sudo iptables -t nat -D POSTROUTING 1
-sudo iptables-save | sudo tee /etc/iptables/rules.v4
-sudo ip6tables-save | sudo tee /etc/iptables/rules.v6
 ```
 
 <div style="page-break-after: always;"></div>
@@ -343,30 +325,22 @@ sudo xl console cloud01.labqs.ita.br
 
 No primeiro caso (_acesso às portas **80** e **443** de uma aplicação internet rodando na máquina virtual_), a porta 80 do _host_ poderá ser mapeada diretamente para a máquina virtual:
 
+
 #### Exemplo de roteamento de porta autorizada para a **DMZ**
 
-
-sudo iptables -t nat -A PREROUTING -i ens160 -p tcp -m tcp --dport 22 -j DNAT --to-destination 161.24.23.94:2222
-
 ```sh
-sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 80 -j DNAT --to-destination 172.31.100.1:8080
+sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 60001 -j DNAT --to-destination 172.31.100.1:2222
 
-sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p udp -m udp --dport 111 -j DNAT --to-destination 172.31.100.1:111
-sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 111 -j DNAT --to-destination 172.31.100.1:111
-sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 2049 -j DNAT --to-destination 172.31.100.1:2049
-sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 32803 -j DNAT --to-destination 172.31.100.1:32803
-sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p udp -m udp --dport 32769 -j DNAT --to-destination 172.31.100.1:32769
-sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 892 -j DNAT --to-destination 172.31.100.2:892
-sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 875 -j DNAT --to-destination 172.31.100.2:875
-sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 662 -j DNAT --to-destination 172.31.100.2:662
-sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 8250 -j DNAT --to-destination 172.31.100.1:8250
-
-sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 9090 -j DNAT --to-destination 172.31.100.1:9090
-sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 16514 -j DNAT --to-destination 172.31.100.1:16514
-
+sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 80 -j DNAT --to-destination 172.31.100.1:80
+sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 443 -j DNAT --to-destination 172.31.100.1:443
 
 sudo iptables-save | sudo tee /etc/iptables/rules.v4
-sudo ip6tables-save | sudo tee /etc/iptables/rules.v6
+```
+
+Reservar as portas `60000 ~ 60099` pelo sistema operacional
+
+```sh
+sysctl -w net.ipv4.ip_local_reserved_ports = 60000, 60099
 ```
 
 Outro caso é o de mapear dois serviços distintos que utilizam a mesma porta em máquinas virtuais diferentes. Vamos supor que temos dois serviços **Postgres** instalados em duas máquinas virtuais diferentes, e ambos utilizam a mesma porta **5400**. O primeiro poderá usar a porta **5400** do _host_, porém o segundo deverá usar uma porta diferente.
@@ -378,7 +352,6 @@ Do mesmo modo que a porta autorizada, é preciso criar a rota:
 ```sh
 sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 5400 -j DNAT --to-destination 172.31.100.1:5400
 sudo iptables-save | sudo tee /etc/iptables/rules.v4
-sudo ip6tables-save | sudo tee /etc/iptables/rules.v6
 ```
 
 Vamos usar como modelo a instalação do **Postgres** no container **Docker**, que está configurado deste modo:
@@ -413,10 +386,25 @@ Novamente é preciso criar uma rota, só que desta vez mapeada para outra porta 
 ```sh
 sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 5300 -j DNAT --to-destination 172.31.100.1:5400
 sudo iptables-save | sudo tee /etc/iptables/rules.v4
-sudo ip6tables-save | sudo tee /etc/iptables/rules.v6
 ```
 
 Os procedimentos para conexão serão os mesmos, só que desta vez utilizando a porta **5300** ao invés da **5400** utilizada no exemplo anterior.
+
+### Excluir regras (caso deseje reverter)
+
+Listar a regra
+
+ ```sh
+sudo iptables -L -t nat --line-numbers
+ ```
+
+Excluir pelo número da linha
+
+```sh
+sudo iptables -t nat -D PREROUTING 1
+sudo iptables-save | sudo tee /etc/iptables/rules.v4
+```
+
 
 ## Ajustes para executar o ambiente LabQS sem certificados digitais
 

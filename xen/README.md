@@ -353,6 +353,14 @@ sudo sysctl -w net.ipv4.ip_local_reserved_ports=60000,60099
 
 Outro caso é o de mapear dois serviços distintos que utilizam a mesma porta em máquinas virtuais diferentes. Vamos supor que temos dois serviços **Postgres** instalados em duas máquinas virtuais diferentes, e ambos utilizam a mesma porta **5400**. O primeiro poderá usar a porta **5400** do _host_, porém o segundo deverá usar uma porta diferente.
 
+#### Rotear porta para administração de containers
+
+```sh
+sudo iptables -t nat -A PREROUTING -i enp2s0f0 -p tcp -m tcp --dport 9001 -j DNAT --to-destination 172.31.100.1:9001
+
+sudo iptables-save | sudo tee /etc/iptables/rules.v4
+```
+
 #### Exemplo de roteamento de porta não autorizada para a **DMZ**
 
 Do mesmo modo que a porta autorizada, é preciso criar a rota:

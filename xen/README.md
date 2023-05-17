@@ -303,6 +303,14 @@ sudo xen-create-image \
 sudo xl create /etc/xen/gpes.ita.br.cfg
 ```
 
+### Programar para a Máquina Virtual re-iniciar após boot
+
+Editar `/etc/xen/gpes.ita.br.cfg`, localizar e modificar `on_poweroff` para `restart`:
+
+```ini
+on_poweroff = 'restart'
+```
+
 ### Acessar a Máquina Virtual
 
 ```sh

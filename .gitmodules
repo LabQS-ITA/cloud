@@ -4,3 +4,6 @@
 [submodule "labqs-env"]
 	path = labqs-env
 	url = https://gitlab.com/jm4rc05/labqs-env.git
+[submodule "kube"]
+	path = kube
+	url = https://github.com/jm4rc05/kube.git

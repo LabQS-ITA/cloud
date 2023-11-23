@@ -309,6 +309,16 @@ Editar `/etc/xen/gpes.ita.br.cfg`, localizar e modificar `on_poweroff` para `res
 
 ```ini
 on_poweroff = 'restart'
+on_reboot   = 'restart'
+on_crash    = 'restart'
+```
+
+Ou opção para ficar em standby
+
+```ini
+on_poweroff = 'preserve'
+on_reboot   = 'preserve'
+on_crash    = 'preserve'
 ```
 
 ### Acessar a Máquina Virtual
